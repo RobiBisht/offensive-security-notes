@@ -1,4 +1,4 @@
-                                                                                                                    **Only See This After Practicing Each Question By Own For At Least 10 Minutes*
+**Only See This After Practicing Each Question By Own For At Least 10 Minutes*
 
 Perform these exercises in your Kali and Ubuntu VMs rather than just copying the commands. They cover important Linux fundamentals used in system administration, networking, and cybersecurity labs.
 
