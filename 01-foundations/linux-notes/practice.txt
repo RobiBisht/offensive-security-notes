@@ -1,0 +1,34 @@
+####Practice :
+
+1] Run man on ls, cp and grep and write down three useful flags for each.
+
+2] In ~/practice, create the structure projects/web, projects/network, and notes. Create three text files, copy one, rename one and delete one.
+
+3] Find every file on your system whose name ends in .conf. Then find the SUID binaries and write down five of them.
+
+4] Print a sorted list of all usernames on your system, one per line, and save it to users.txt.
+
+5] Create secret.txt and set it so only you can read and write it. Create a second user, switch to them with su, and confirm they cannot read the file.
+
+6] Explain in your own words why /etc/shadow is only readable by root while /etc/passwd is readable by everyone.
+
+7] Log in from Kali to Ubuntu, create a file there, and download it back with scp. Then disable password login in /etc/ssh/sshd_config on Ubuntu to see how key-only login works (take a snapshot first).
+
+8] Start a sleep 600 process in the background, find its PID with ps aux | grep sleep, and kill it.
+
+9] Add a cron job that writes the date to /tmp/cron-test.txt every minute. Wait 2 minutes, check the file, then remove the job.
+
+10] Start two sleep processes, pause one and kill the other with different signals, and confirm each result with ps aux.
+
+11] Install tree, run tree ~/practice to view your folder structure, then remove it.
+
+12] Try to SSH into the Ubuntu VM with a wrong password twice from Kali. Then find those "Failed password" lines in the log on Ubuntu.
+
+13] Read your /etc/apt/sources.list and the files in sources.list.d/, and write in your notes what each line means (type of source, URL, release name, components).
+
+14] Write a script that takes a file name as an argument and tells you whether it exists, its size and its permissions.
+
+15] Use Vim to create hello.sh, write a three-line script, save it, make it executable and run it. Then open /etc/passwd with vim and quit with :q! so you cannot damage anything.
+
+16] Write one line that creates a folder, enters it and creates a file inside it, so that it stops cleanly if any step fails.
+

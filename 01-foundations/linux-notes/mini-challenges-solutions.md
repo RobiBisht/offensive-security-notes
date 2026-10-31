@@ -2,23 +2,31 @@
 
 Perform these exercises in your Kali and Ubuntu VMs rather than just copying the commands. They cover important Linux fundamentals used in system administration, networking, and cybersecurity labs.
 
-1. Create the folder structure lab/web, lab/network, lab/notes with one .txt file in each.
+## 1. Create the folder structure lab/web, lab/network, lab/notes with one .txt file in each.
 
-Command : mkdir -p lab/web lab/network lab/notes
+### Command : 
 
+```bash
+mkdir -p lab/web lab/network lab/notes
+```
 
-Create one file in each folder:
+### Create one file in each folder:
 
+```bash
 touch lab/web/web.txt
 touch lab/network/network.txt
 touch lab/notes/notes.txt
+```
 
+### Verify : 
 
-Verify : tree lab
+```bash
+tree lab
+```
 
+### Expected output:
 
-Expected output:
-
+```text
 lab
 ├── network
 │   └── network.txt
@@ -26,6 +34,7 @@ lab
 │   └── notes.txt
 └── web
     └── web.txt
+```
 
 - mkdir – Creates directories.
 - -p – Creates parent directories if needed.
@@ -33,12 +42,15 @@ lab
 - tree – Displays directory structure.
 
 
+## 2. Find all files in /etc that are readable by everyone and end in .conf. Save the list to a file.
 
-2. Find all files in /etc that are readable by everyone and end in .conf. Save the list to a file.
+### Command : 
 
-Command : find /etc -type f -name "*.conf" -perm -004 2>/dev/null > readable_conf.txt
+```bash
+find /etc -type f -name "*.conf" -perm -004 2>/dev/null > readable_conf.txt
+```
 
-Explanation:
+### Explanation:
 
 - find /etc – Searches inside /etc.
 - -type f – Finds regular files only.
@@ -48,17 +60,24 @@ Explanation:
 - > – Saves the output into a file.
 
 
-Verify : cat readable_conf.txt
+### Verify :
+
+```bash
+cat readable_conf.txt
+```
 
 Note: -perm -004 checks whether the others-read permission bit is set, not whether the file is necessarily accessible through every parent directory.
 
 
+## 3. List all users on the system with /bin/bash as their shell, sorted alphabetically.
 
-3. List all users on the system with /bin/bash as their shell, sorted alphabetically.
+### Command : 
 
-Command : awk -F: '$7 == "/bin/bash" {print $1}' /etc/passwd | sort
+```bash
+awk -F: '$7 == "/bin/bash" {print $1}' /etc/passwd | sort
+```
 
-Explanation:
+### Explanation:
 
 - awk – Processes text data.
 - -F: – Uses : as the field separator.
@@ -67,65 +86,73 @@ Explanation:
 - sort – Sorts usernames alphabetically.
 - | – Sends the output of one command to another.
 
-Example output:
+### Example output:
 
+```text
 kali
 root
 student
-
+```
 Your actual output depends on the users on your system.
 
 
+## 4. Create a user named guest1, make a file only you can read, and prove guest1 cannot read it.
 
-4. Create a user named guest1, make a file only you can read, and prove guest1 cannot read it.
+### Step 1: Create the user
 
-
-Step 1: Create the user
-
+```bash
 sudo adduser guest1
+```
 
 Follow the prompts to set a password.
 
+### Step 2: Create a private file
 
-Step 2: Create a private file
-
+```bash
 echo "This is my private file" > private.txt
+```
 
+### Step 3: Give read/write permission only to the owner
 
-Step 3: Give read/write permission only to the owner
-
+```bash
 chmod 600 private.txt
+```
 
+### Step 4: Verify permissions
 
-Step 4: Verify permissions
-
+```bash
 ls -l private.txt
+```
 
+### Expected:
 
-Expected:
-
+```text
 -rw------- 1 kali kali ... private.txt
+```
 
+### Step 5: Switch to guest1
 
-Step 5: Switch to guest1
-
+```bash
 su - guest1
+```
 
+### Step 6: Try reading the file
 
-Step 6: Try reading the file
-
+```bash
 cat /home/kali/private.txt
+```
 
+### Expected:
 
-Expected:
-
+```text
 Permission denied
+```
 
+### Step 7: Return to your original user
 
-Step 7: Return to your original user
-
+```bash
 exit
-
+```
 
 Why does it fail?
 
@@ -140,8 +167,7 @@ Others                     	None (0)
 Therefore, guest1 cannot read the file.
 
 
-
-5. SSH from Kali to Ubuntu, create a file on Ubuntu, and download it with scp.
+## 5. SSH from Kali to Ubuntu, create a file on Ubuntu, and download it with scp.
 
 You need two running VMs.
 
@@ -149,32 +175,37 @@ Kali VM SSH client (sender/requester)
 
 Ubuntu VM SSH server (remote machine)
 
-
-Step 1: Find Ubuntu's IP address
+### Step 1: Find Ubuntu's IP address
 
 On Ubuntu:
 
+```bash
 ip addr
+```
 
 Look for the IP address associated with your network interface, such as : 192.168.1.105
 
+### Step 2: Install and enable SSH server on Ubuntu
 
-Step 2: Install and enable SSH server on Ubuntu
-
+```bash
 sudo apt update
 sudo apt install openssh-server -y
 sudo systemctl enable --now ssh
+```
 
 Check:
 
+```bash
 sudo systemctl status ssh
+```
 
-
-Step 3: Connect from Kali to Ubuntu
+### Step 3: Connect from Kali to Ubuntu
 
 On Kali:
 
+```bash
 ssh ubuntu_username@192.168.1.105
+```
 
 Replace :
 
@@ -183,95 +214,107 @@ Replace :
 
 Enter the Ubuntu user's password when prompted.
 
-
-Step 4: Create a file on Ubuntu
+### Step 4: Create a file on Ubuntu
 
 After connecting:
 
+```bash
 echo "Hello from Ubuntu" > remote.txt
+```
 
 Verify:
 
+```bash
 ls
 cat remote.txt
+```
 
+### Step 5: Exit SSH
 
-Step 5: Exit SSH
-
+```bash
 exit
+```
 
-
-Step 6: Download the file using SCP
+### Step 6: Download the file using SCP
 
 On Kali:
 
+```bash
 scp ubuntu_username@192.168.1.105:~/remote.txt .
+```
 
+### Step 7: Verify
 
-Step 7: Verify
-
+```bash
 ls
 cat remote.txt
+```
 
 You have now downloaded the file from Ubuntu to Kali.
 
 
+## 6. Add a cron job that logs the date every minute, confirm it works, then remove it.
 
-6. Add a cron job that logs the date every minute, confirm it works, then remove it.
+### Step 1: Open the cron editor
 
-Step 1: Open the cron editor
-
+```bash
 crontab -e
+```
 
+### Step 2: 
 
-Step 2: * * * * * date >> ~/date_log.txt
+```bash
+* * * * * date >> ~/date_log.txt
+```
 
 Explanation:
-
 
 Field        	Meaning
 
 First *       	Every minute
-
 Second *      	Every hour
-
 Third *      	Every day of the month
-
 Fourth *   	Every month
-
 Fifth *      	Every day of the week
 
 date prints the current date and time.
 
 >> appends the output to the file instead of overwriting it.
 
-
-Step 3: Verify the cron job
+### Step 3: Verify the cron job
 
 Wait 1–2 minutes.
 
+```bash
 cat ~/date_log.txt
+```
 
 You should see timestamps.
 
+### Step 4: Remove the cron job
 
-Step 4: Remove the cron job
-
+```bash
 crontab -e
+```
 
-Delete this line : * * * * * date >> ~/date_log.txt
+Delete this line : 
+
+```bash
+* * * * * date >> ~/date_log.txt
+```
 
 Save and exit.
 
-Step 5: Confirm removal
+### Step 5: Confirm removal
 
+```bash
 crontab -l
+```
 
 The date logging job should no longer appear.
 
 
-
-7. Install tree, view your lab folder, and remove the package.
+## 7. Install tree, view your lab folder, and remove the package.
 
 
 Step 1: Install tree
