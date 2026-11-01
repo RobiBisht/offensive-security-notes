@@ -18,9 +18,9 @@ Network setting: In VirtualBox, set both VMs to the same Host-only Adapter (or N
 Create a safe practice folder (in Kali or Ubuntu):
 
 ```bash
-mkdir ~/practice                                                           # create a practice folder.
+mkdir ~/practice  # create a practice folder.
 
-cd ~/practice                                                                 # do all the exercises inside this folder so you do not break anything.
+cd ~/practice     # do all the exercises inside this folder so you do not break anything.
 ```
 
 The Man Pages (Manual Pages) are built-in Linux documentation that explains how to use Linux commands. on your VM (type man ls; press q to quit)
@@ -31,33 +31,33 @@ The Man Pages (Manual Pages) are built-in Linux documentation that explains how 
 Most commands accept flags that change their behavior. A flag usually starts with - (short options) or -- (long options).
 
 ```bash
-ls                      # list files
-ls -l                   # long format (permissions, owner, size, date)
-ls -a                  # show hidden files (names starting with .)
-ls -lah              # combine flags: long, all, human-readable sizes
-ls --help           # quick help
-man ls             # full manual (press q to quit)
+ls         # list files
+ls -l      # long format (permissions, owner, size, date)
+ls -a      # show hidden files (names starting with .)
+ls -lah    # combine flags: long, all, human-readable sizes
+ls --help  # quick help
+man ls     # full manual (press q to quit)
 ```
 
 
 ## 2. Navigating and Managing Files
 
 ```bash
-pwd                                                      # print current directory
-cd /etc                                                  # go to an absolute path
-cd ..                                                       # go up one level
-cd ~                                                       # go to your home directory
-cd -                                                        # go back to the previous directory
+pwd                       # print current directory
+cd /etc                   # go to an absolute path
+cd ..                     # go up one level
+cd ~                      # go to your home directory
+cd -                      # go back to the previous directory
 
-mkdir notes                                          # create a folder
-mkdir -p a/b/c                                      # create nested folders in one go
-touch file1.txt                                       # create an empty file
-cp file1.txt file2.txt                               # copy a file 
-cp -r a/ backup/                                    # copy a folder 
-mv file2.txt renamed.txt                      # move or rename
-rm renamed.txt                                    # delete a file (no recycle bin!)
-rm -r backup/                                       # delete a folder and its contents
-rmdir notes                                          # delete an empty folder
+mkdir notes               # create a folder
+mkdir -p a/b/c            # create nested folders in one go
+touch file1.txt           # create an empty file
+cp file1.txt file2.txt    # copy a file 
+cp -r a/ backup/          # copy a folder 
+mv file2.txt renamed.txt  # move or rename
+rm renamed.txt            # delete a file (no recycle bin!)
+rm -r backup/             # delete a folder and its contents
+rmdir notes               # delete an empty folder
 ```
 
 (cp copy file1.txt to file2.txt, if file2.txt exists it overwrites it, if it doesn't exist it creates one and then copy)
@@ -66,20 +66,20 @@ rmdir notes                                          # delete an empty folder
 ### Viewing file contents
 
 ```bash
-cat file.txt                                                     # print the whole file
-less /etc/passwd                                          # scroll through a file (q to quit)
-head -n 5 /etc/passwd                                # print first 5 lines
-tail -n 5 /etc/passwd                                   # print last 5 lines
-wc -l /etc/passwd                                        # count lines
-file /bin/ls                                                    # what type of file is this
+cat file.txt           # print the whole file
+less /etc/passwd       # scroll through a file (q to quit)
+head -n 5 /etc/passwd  # print first 5 lines
+tail -n 5 /etc/passwd  # print last 5 lines
+wc -l /etc/passwd      # count lines
+file /bin/ls           # what type of file is this
 ```
 
 ### Writing to files
 
 ```bash
-echo "hello" > hello.txt                              # `>` write 
-echo "second line" >> hello.txt                 # `>>` appends 
-nano hello.txt                                            # simple text editor (Ctrl+O save, Ctrl+X exit)
+echo "hello" > hello.txt         # `>` write 
+echo "second line" >> hello.txt  # `>>` appends 
+nano hello.txt                   # simple text editor (Ctrl+O save, Ctrl+X exit)
 ```
 
 '>'(overwrites the file)
@@ -89,20 +89,20 @@ nano hello.txt                                            # simple text editor (
 ## 3. Finding Things: find, locate, grep, which
 
 ```bash
-find / -name "passwd" 2>/dev/null                  # find a file by name
-find /home -type f -name "*.txt"                      # find all .txt files
-find / -type f -size +10M 2>/dev/null               # files larger than 10 MB
-find / -perm -4000 2>/dev/null                         # find SUID files 
-find / -user root -type f 2>/dev/null                # files owned by root
+find / -name "passwd" 2>/dev/null      # find a file by name
+find /home -type f -name "*.txt"       # find all .txt files
+find / -type f -size +10M 2>/dev/null  # files larger than 10 MB
+find / -perm -4000 2>/dev/null         # find SUID files 
+find / -user root -type f 2>/dev/null  # files owned by root
 
-locate passwd                                                   # fast search (run: sudo updatedb first)
-which python3                                                  # where is this command located
+locate passwd                          # fast search (run: sudo updatedb first)
+which python3                          # where is this command located
 
-grep "root" /etc/passwd                                  # lines containing root
-grep -i "error" file.txt                                       # case-insensitive
-grep -r "password" ~/practice                          # search inside all files in a folder
-grep -n "bash" /etc/passwd                             # show line numbers
-grep -v "nologin" /etc/passwd                         # show lines that do NOT match
+grep "root" /etc/passwd                # lines containing root
+grep -i "error" file.txt               # case-insensitive
+grep -r "password" ~/practice          # search inside all files in a folder
+grep -n "bash" /etc/passwd             # show line numbers
+grep -v "nologin" /etc/passwd          # show lines that do NOT match
 ```
 2>/dev/null hides permission errors so the output stays readable.
 
@@ -114,26 +114,26 @@ find / -perm -4000 2>/dev/null           (important for privilege escalation) [R
 A pipe (|) sends the output of one command into another. This is one of the most useful Linux skills for hacking.
 
 ```bash
-cat /etc/passwd | grep "bash"                      # users with a bash shell
-ls -l /etc | wc -l                                               # count items in /etc
-cut -d ":" -f 1 /etc/passwd                             # print only usernames (first field)
-cut -d ":" -f 1,7 /etc/passwd                          # username and shell
-sort names.txt                                                # sort lines
-sort names.txt | uniq                                    # remove duplicate lines
-sort names.txt | uniq -c | sort -nr                # count and rank duplicates
-awk -F: '{print $1}' /etc/passwd                    # same as cut, using awk
-sed 's/bash/zsh/' file.txt                               # replace text in output (does not change the file)
-tr 'a-z' 'A-Z' < file.txt                                      # convert to uppercase
+cat /etc/passwd | grep "bash"        # users with a bash shell
+ls -l /etc | wc -l                   # count items in /etc
+cut -d ":" -f 1 /etc/passwd          # print only usernames (first field)
+cut -d ":" -f 1,7 /etc/passwd        # username and shell
+sort names.txt                       # sort lines
+sort names.txt | uniq                # remove duplicate lines
+sort names.txt | uniq -c | sort -nr  # count and rank duplicates
+awk -F: '{print $1}' /etc/passwd     # same as cut, using awk
+sed 's/bash/zsh/' file.txt           # replace text in output (does not change the file)
+tr 'a-z' 'A-Z' < file.txt            # convert to uppercase
 ```
 
 ### Redirection
 
 ```bash
-command > file                        # write output to a file (overwrite)
-command >> file                      # append new output at the end of the file without deleting existing content.
-command 2> errors                 # write only errors to a file
-command &> all                      # write output and errors
-command < file                        # read input from a file
+command > file     # write output to a file (overwrite)
+command >> file    # append new output at the end of the file without deleting existing content.
+command 2> errors  # write only errors to a file
+command &> all     # write output and errors
+command < file     # read input from a file
 ```
 
 
@@ -154,32 +154,32 @@ Breakdown: the first character is the type (- file, d directory), then three set
 ### Changing permissions
 
 ```bash
-chmod 755 script.sh                    # owner rwx, group r-x, others r-x (rwx have theie numeric values r=4 w=2 x=1
-chmod 644 notes.txt                   # owner rw-, group r--, others r--
-chmod +x script.sh                      # add execute for everyone
-chmod u+x,g-w file                      # symbolic: user plus x (add execute for user), group minus w (minus write for group)
-chmod -R 750 folder/                  # recursively
+chmod 755 script.sh   # owner rwx, group r-x, others r-x (rwx have theie numeric values r=4 w=2 x=1
+chmod 644 notes.txt   # owner rw-, group r--, others r--
+chmod +x script.sh    # add execute for everyone
+chmod u+x,g-w file    # symbolic: user plus x (add execute for user), group minus w (minus write for group)
+chmod -R 750 folder/  # recursively
 ```
 
 ### Ownership
 
 ```bash
-chown user file.txt                        # change owner (needs sudo)
-chown user:group file.txt             # change owner and group
-id                                                    # your user id and groups
-whoami                                         # current user
-groups                                           # your groups
+chown user file.txt        # change owner (needs sudo)
+chown user:group file.txt  # change owner and group
+id                         # your user id and groups
+whoami                     # current user
+groups                     # your groups
 ```
 
 ### Users and sudo
 
 ```bash
-sudo adduser testuser                                        # create a user (set a password when asked)
-sudo usermod -aG sudo testuser                       # add to the sudo group
-su testuser                                                           # switch user
-sudo -l                                                                  # list what you can run with sudo
-sudo passwd testuser                                         # change a password
-sudo deluser testuser                                         # delete the user
+sudo adduser testuser           # create a user (set a password when asked)
+sudo usermod -aG sudo testuser  # add to the sudo group
+su testuser                     # switch user
+sudo -l                         # list what you can run with sudo
+sudo passwd testuser            # change a password
+sudo deluser testuser           # delete the user
 ```
 
 ### Special permissions (very important for privilege escalation)
@@ -191,7 +191,7 @@ sudo deluser testuser                                         # delete the user
 ```bash
 ls -l /usr/bin/passwd
 ls -ld /tmp
-chmod u+s file             # set SUID (for learning only)
+chmod u+s file  # set SUID (for learning only)
 ```
 
 
@@ -212,10 +212,10 @@ Directory	                                       What it holds
 
 ```bash
 ls /etc
-cat /etc/passwd                          # list of users
-sudo cat /etc/shadow                # hashed passwords (root only)
+cat /etc/passwd       # list of users
+sudo cat /etc/shadow  # hashed passwords (root only)
 cat /etc/hosts
-cat /etc/os-release                     # which distro and version
+cat /etc/os-release   # which distro and version
 ls /var/log
 ```
 
@@ -227,18 +227,18 @@ SSH lets you control another machine's terminal securely. Practice it between yo
 On the Ubuntu VM (the machine you connect to):
 
 ```bash
-sudo apt update                                                         # refresh the terminal
-sudo apt install openssh-server -y                            # install SSH
-sudo systemctl start ssh                                            # start SSH
-sudo systemctl enable ssh                                        # enable SSH
-sudo systemctl status ssh                                         # status ## should show active (running)
-ip a                                                                             # note the IP address (for example 192.168.56.101)
+sudo apt update                     # refresh the terminal
+sudo apt install openssh-server -y  # install SSH
+sudo systemctl start ssh            # start SSH
+sudo systemctl enable ssh           # enable SSH
+sudo systemctl status ssh           # status ## should show active (running)
+ip a                                # note the IP address (for example 192.168.56.101)
 ```
 
 On the Kali VM (the machine you connect from):
 
 ```bash
-ssh ubuntuusername@192.168.56.101               # use you ubantu login username
+ssh ubuntuusername@192.168.56.101  # use you ubantu login username
 ```
 
 Type yes the first time, then enter the password. Your prompt will change to the remote machine. Type exit to leave.
@@ -246,8 +246,8 @@ Type yes the first time, then enter the password. Your prompt will change to the
 Copy files with scp:
 
 ```bash
-scp file.txt user@192.168.56.101:/home/user/                 # upload
-scp user@192.168.56.101:/home/user/file.txt .                # download
+scp file.txt user@192.168.56.101:/home/user/   # upload
+scp user@192.168.56.101:/home/user/file.txt .  # download
 ```
 
 Key-based login (more secure and a good thing to learn):
@@ -255,22 +255,22 @@ Key-based login (more secure and a good thing to learn):
 ```bash
 ssh-keygen -t ed25519
 ssh-copy-id user@192.168.56.101
-ssh user@192.168.56.101                                      # now works without a password
+ssh user@192.168.56.101  # now works without a password
 ```
 
 
 ## 8. Basic Networking Commands
 
 ```bash
-ip a                                                           # your IP addresses and interfaces
-ip route                                                    # routing table and default gateway
-ping -c 4 192.168.56.101                          # test connectivity (4 packets)
-ss -tuln                                                      # open listening ports
-sudo ss -tulnp                                          # include the program using each port
-hostname                                                 # machine name
-cat /etc/resolv.conf                                  # DNS settings
-curl http://example.com                          # fetch a web page
-wget http://example.com/file.txt            # download a file
+ip a                              # your IP addresses and interfaces
+ip route                          # routing table and default gateway
+ping -c 4 192.168.56.101          # test connectivity (4 packets)
+ss -tuln                          # open listening ports
+sudo ss -tulnp                    # include the program using each port
+hostname                          # machine name
+cat /etc/resolv.conf              # DNS settings
+curl http://example.com           # fetch a web page
+wget http://example.com/file.txt  # download a file
 ```
 
 Start a quick web server to share files between your VMs:
@@ -288,22 +288,22 @@ Then from the other VM run wget http://IP-OF-THIS-VM:8000/file.txt. You will use
 ### Viewing processes
 
 ```bash
-ps                                   # processes associated with your current terminal
-ps aux                            # all processes on the system
-ps aux | grep ssh          # find a specific process
-top                                 # live view (q to quit)
-htop                               # nicer version (sudo apt install htop)
+ps                 # processes associated with your current terminal
+ps aux             # all processes on the system
+ps aux | grep ssh  # find a specific process
+top                # live view (q to quit)
+htop               # nicer version (sudo apt install htop)
 ```
 
 ### Controlling processes
 
 ```bash
-sleep 300 &              # run a command in the background
-jobs                          # list background jobs
-fg %1                        # bring job 1 to the foreground
-kill 1234                   # stop the process with PID 1234
-kill -9 1234              # force-kill
-pkill sleep               # kill by name
+sleep 300 &   # run a command in the background
+jobs          # list background jobs
+fg %1         # bring job 1 to the foreground
+kill 1234     # stop the process with PID 1234
+kill -9 1234  # force-kill
+pkill sleep   # kill by name
 ```
 
 ### Services with systemctl
@@ -313,8 +313,8 @@ systemctl status ssh
 sudo systemctl stop ssh
 sudo systemctl start ssh
 sudo systemctl restart ssh
-sudo systemctl enable ssh                               # start at boot
-sudo systemctl disable ssh                              # do not start at boot
+sudo systemctl enable ssh   # start at boot
+sudo systemctl disable ssh  # do not start at boot
 systemctl list-units --type=service
 ```
 
@@ -324,19 +324,19 @@ systemctl list-units --type=service
 Cron runs commands on a schedule. Attackers also abuse misconfigured cron jobs, so understanding them matters.
 
 ```bash
-crontab -e                # edit your cron jobs
-crontab -l                 # list your cron jobs
-ls /etc/cron.d           # system cron jobs
+crontab -e      # edit your cron jobs
+crontab -l      # list your cron jobs
+ls /etc/cron.d  # system cron jobs
 cat /etc/crontab
 ```
 
 Format: minute hour day-of-month month day-of-week command
 
 ```bash
-* * * * * echo "hi" >> /tmp/cron-test.txt        # every minute
-0 2 * * * /home/user/backup.sh                     # every day at 2:00
-*/5 * * * * date >> /tmp/time.log                   # every 5 minutes
-0 9 * * 1 /home/user/weekly.sh                      # Mondays at 9:00
+* * * * * echo "hi" >> /tmp/cron-test.txt  # every minute
+0 2 * * * /home/user/backup.sh             # every day at 2:00
+*/5 * * * * date >> /tmp/time.log          # every 5 minutes
+0 9 * * 1 /home/user/weekly.sh             # Mondays at 9:00
 ```
 
 
@@ -345,23 +345,23 @@ Format: minute hour day-of-month month day-of-week command
 Every running process has a PID (process ID) and a PPID (its parent's ID). The first process, PID 1 (systemd or init), starts all the others.
 
 ```bash
-ps -ef                                           # all processes with PID and PPID
-ps aux | grep ssh                       # find a process
-pgrep ssh                                    # print the PID of processes named ssh
-pstree                                        # show the parent and child tree
-echo $$                                      # the PID of your current shell
-ls /proc/$$                                # the live data Linux keeps about that process
+ps -ef             # all processes with PID and PPID
+ps aux | grep ssh  # find a process
+pgrep ssh          # print the PID of processes named ssh
+pstree             # show the parent and child tree
+echo $$            # the PID of your current shell
+ls /proc/$$        # the live data Linux keeps about that process
 ```
 
 Signals are messages sent to processes. kill does not only kill; it sends any signal.
 
 ```bash
-kill -l                       # list all signals
-kill -15 1234           # SIGTERM: politely ask the process to stop (the default)
-kill -9 1234             # SIGKILL: force it to stop immediately, no cleanup
-kill -19 1234           # SIGSTOP: pause the process
-kill -18 1234           # SIGCONT: resume a paused process
-kill -1 1234             # SIGHUP: hang up; many services reload their config
+kill -l        # list all signals
+kill -15 1234  # SIGTERM: politely ask the process to stop (the default)
+kill -9 1234   # SIGKILL: force it to stop immediately, no cleanup
+kill -19 1234  # SIGSTOP: pause the process
+kill -18 1234  # SIGCONT: resume a paused process
+kill -1 1234   # SIGHUP: hang up; many services reload their config
 ```
 
 | Signal | Number | Meaning |
@@ -382,12 +382,12 @@ Keyboard shortcuts in a terminal:
 Try this to see signals in action:
 
 ```bash
-sleep 600 &                      # start a background process
-pgrep sleep                      # note its PID
-kill -19 <PID>                    # pause it
-ps aux | grep sleep         # the state column shows T (stopped)
-kill -18 <PID>                   # resume it
-kill -15 <PID>                   # stop it politely
+sleep 600 &          # start a background process
+pgrep sleep          # note its PID
+kill -19 <PID>       # pause it
+ps aux | grep sleep  # the state column shows T (stopped)
+kill -18 <PID>       # resume it
+kill -15 <PID>       # stop it politely
 ```
 
 To keep a process running after you close the terminal, start it with nohup:
@@ -403,15 +403,15 @@ Use kill -15 first and only use kill -9 when a process will not stop, because -9
 On Debian-based systems (Kali, Ubuntu) use apt.
 
 ```bash
-sudo apt update                       # refresh the package list
-sudo apt upgrade -y                 # upgrade installed packages
-sudo apt install tree -y             # install a package
-sudo apt remove tree               # remove it
-sudo apt purge tree                  # remove it and its config
-apt search nmap                       # search packages
-apt show nmap                         # package details
-dpkg -l | grep nmap                  # check whether it is installed
-sudo dpkg -i package.deb         # install a downloaded .deb file
+sudo apt update           # refresh the package list
+sudo apt upgrade -y       # upgrade installed packages
+sudo apt install tree -y  # install a package
+sudo apt remove tree      # remove it
+sudo apt purge tree       # remove it and its config
+apt search nmap           # search packages
+apt show nmap             # package details
+dpkg -l | grep nmap       # check whether it is installed
+sudo dpkg -i package.deb  # install a downloaded .deb file
 ```
 
 ## 13. Logs
@@ -420,13 +420,13 @@ Logs show what happened on the system. As a hacker you read them to understand d
 
 ```bash
 ls /var/log
-sudo tail -n 20 /var/log/syslog                                            # general system log (Ubuntu)
-sudo tail -n 20 /var/log/auth.log                                        # logins and sudo use (Ubuntu with rsyslog)
-sudo tail -f /var/log/auth.log                                              # follow live (Ctrl+C to stop)
-sudo journalctl -u ssh -n 20                                                 # logs for the ssh service
-sudo journalctl -xe                                                                # recent logs with explanations
+sudo tail -n 20 /var/log/syslog    # general system log (Ubuntu)
+sudo tail -n 20 /var/log/auth.log  # logins and sudo use (Ubuntu with rsyslog)
+sudo tail -f /var/log/auth.log     # follow live (Ctrl+C to stop)
+sudo journalctl -u ssh -n 20       # logs for the ssh service
+sudo journalctl -xe                # recent logs with explanations
 sudo grep "Failed password" /var/log/auth.log
-last                                                                                         # login history
+last                               # login history
 ```
 If /var/log/auth.log does not exist, your system uses the systemd journal, so use journalctl instead.
 
@@ -436,8 +436,8 @@ If /var/log/auth.log does not exist, your system uses the systemd journal, so us
 apt installs software from repositories: servers that hold packages. Your system lists them in:
 
 ```bash
-cat /etc/apt/sources.list            # main list of repositories
-ls /etc/apt/sources.list.d/          # extra repository files
+cat /etc/apt/sources.list    # main list of repositories
+ls /etc/apt/sources.list.d/  # extra repository files
 ```
 Kali's repositories are set up for security tools. On Ubuntu you may want software that is not in the default repositories, such as a vendor's own tools. Adding a third-party source has three parts:
 
@@ -484,11 +484,11 @@ Security notes:
 ```bash
 echo $HOME
 echo $USER
-echo $PATH                               # folders the shell searches for commands
+echo $PATH          # folders the shell searches for commands
 export MYVAR="test"
 echo $MYVAR
-env                                             # list all variables
-alias ll='ls -lah'                          # create a shortcut for this session
+env                 # list all variables
+alias ll='ls -lah'  # create a shortcut for this session
 ```
 PATH matters for security: if a privileged script runs a command without its full path and you can control PATH, you may be able to run your own program instead. Understand it now and you will recognize it later in privilege escalation labs.
 
@@ -502,10 +502,10 @@ Bash (Bourne Again Shell) is the default shell on many Linux distributions, incl
 ### Checking your current shell
 
 ```bash
-echo "$SHELL"              # your configured login shell
-ps -p $$                        # show the shell process running in this terminal
-echo "$0"                     # often shows the current shell name
-cat /etc/shells             # list shells allowed on the system
+echo "$SHELL"    # your configured login shell
+ps -p $$         # show the shell process running in this terminal
+echo "$0"        # often shows the current shell name
+cat /etc/shells  # list shells allowed on the system
 ```
 
 `$SHELL` usually shows your configured login shell. `ps -p $$` checks the process for the shell currently running in this terminal; these values can differ in some situations.
@@ -526,10 +526,10 @@ robi@kali:~/practice$
 ### Command types
 
 ```bash
-type cd                                     # identify whether cd is a shell builtin, alias, or executable
-type ls                                      # identify the command type for ls
-command -v python3             # show how the shell resolves python3
-alias                                         # list aliases for this shell session
+type cd             # identify whether cd is a shell builtin, alias, or executable
+type ls             # identify the command type for ls
+command -v python3  # show how the shell resolves python3
+alias               # list aliases for this shell session
 ```
 
 Some commands, such as `cd`, are shell builtins because they need to change the state of the current shell. Other commands, such as many programs in `/usr/bin`, are separate executable files.
@@ -539,16 +539,16 @@ Some commands, such as `cd`, are shell builtins because they need to change the 
 Quotes control how the shell interprets spaces and special characters.
 
 ```bash
-echo "My home is $HOME"                      # double quotes allow variable expansion
-echo 'My home is $HOME'                        # single quotes keep $HOME literal
-echo "A file name with spaces"               # double quotes keep the words together
+echo "My home is $HOME"         # double quotes allow variable expansion
+echo 'My home is $HOME'         # single quotes keep $HOME literal
+echo "A file name with spaces"  # double quotes keep the words together
 ```
 
 Use quotes around paths or filenames that contain spaces:
 
 ```bash
-cat "my notes.txt"               # read a file whose name contains a space
-mkdir "Linux Practice"         # create a directory with a space in its name
+cat "my notes.txt"      # read a file whose name contains a space
+mkdir "Linux Practice"  # create a directory with a space in its name
 ```
 
 ### Shell startup files
@@ -556,9 +556,9 @@ mkdir "Linux Practice"         # create a directory with a space in its name
 Bash reads configuration files when it starts. These files can set aliases, environment variables, and prompt settings.
 
 ```bash
-ls -a ~                                # show hidden files in your home directory
-nano ~/.bashrc                # edit interactive Bash settings for your user
-source ~/.bashrc              # reload ~/.bashrc in the current Bash session
+ls -a ~           # show hidden files in your home directory
+nano ~/.bashrc    # edit interactive Bash settings for your user
+source ~/.bashrc  # reload ~/.bashrc in the current Bash session
 ```
 
 Common files:
@@ -573,10 +573,10 @@ Be careful when editing shell startup files: a syntax error can affect future te
 ### Shell history
 
 ```bash
-history                         # show commands entered previously
-history 10                    # show the last 10 history entries
-!!                                  # repeat the previous command
-!25                               # run history entry number 25
+history     # show commands entered previously
+history 10  # show the last 10 history entries
+!!          # repeat the previous command
+!25         # run history entry number 25
 ```
 
 History expansion such as `!!` and `!25` is interpreted by Bash. Check a command before repeating it, especially if it uses `sudo` or changes files.
@@ -590,12 +590,12 @@ System information commands help you identify the Linux distribution, kernel, ha
 ### Operating system and kernel
 
 ```bash
-uname                            # kernel name
-uname -r                        # kernel release/version
-uname -a                       # all available kernel/system information
-cat /etc/os-release        # Linux distribution name and version
-hostname                      # display the computer's hostname
-hostnamectl                  # show hostname and system information
+uname                # kernel name
+uname -r             # kernel release/version
+uname -a             # all available kernel/system information
+cat /etc/os-release  # Linux distribution name and version
+hostname             # display the computer's hostname
+hostnamectl          # show hostname and system information
 ```
 
 `uname` reports kernel information, while `/etc/os-release` identifies the Linux distribution. They answer different questions.
@@ -603,29 +603,29 @@ hostnamectl                  # show hostname and system information
 ### CPU and memory
 
 ```bash
-lscpu                                 # CPU architecture, cores, threads, and model
-free -h                              # RAM and swap usage in human-readable units
-cat /proc/cpuinfo            # detailed processor information
-cat /proc/meminfo          # detailed memory information
+lscpu              # CPU architecture, cores, threads, and model
+free -h            # RAM and swap usage in human-readable units
+cat /proc/cpuinfo  # detailed processor information
+cat /proc/meminfo  # detailed memory information
 ```
 
 ### Storage and connected devices
 
 ```bash
-lsblk                        # list disks and partitions
-lsblk -f                    # show filesystem types, labels, and mount points
-lspci                        # list PCI devices, such as network and graphics adapters
-lsusb                       # list USB devices
+lsblk     # list disks and partitions
+lsblk -f  # show filesystem types, labels, and mount points
+lspci     # list PCI devices, such as network and graphics adapters
+lsusb     # list USB devices
 ```
 
 ### Uptime and logged-in users
 
 ```bash
-uptime                     # how long the system has been running and load averages
-who                         # users currently logged in
-w                             # logged-in users and what they are doing
-date                        # current system date and time
-timedatectl             # time, date, and time-synchronization information
+uptime       # how long the system has been running and load averages
+who          # users currently logged in
+w            # logged-in users and what they are doing
+date         # current system date and time
+timedatectl  # time, date, and time-synchronization information
 ```
 
 ### A quick system-information check
@@ -645,10 +645,10 @@ These commands only display information; they do not change system configuration
 ## 17. Compression and Archives
 
 ```bash
-tar -cvf archive.tar folder/               # create a tar archive
-tar -czvf archive.tar.gz folder/         # create a compressed archive
-tar -xvf archive.tar                           # extract
-tar -xzvf archive.tar.gz                     # extract a gzipped archive
+tar -cvf archive.tar folder/      # create a tar archive
+tar -czvf archive.tar.gz folder/  # create a compressed archive
+tar -xvf archive.tar              # extract
+tar -xzvf archive.tar.gz          # extract a gzipped archive
 zip -r archive.zip folder/
 unzip archive.zip
 ```
@@ -746,26 +746,26 @@ Operators let you control when the next command runs.
 
 
 ```bash
-mkdir testdir && cd testdir && echo "made it"              # each step runs only if the last one worked
-mkdir testdir && echo "created"                                     # second time: mkdir fails, so echo does NOT run
-ls /nonexistent || echo "that folder is missing"             # echo runs because ls failed
-cd ~/practice ; ls ; pwd                                                      # all three run, one after another
-sleep 60 &                                                                         # runs in the background
+mkdir testdir && cd testdir && echo "made it"     # each step runs only if the last one worked
+mkdir testdir && echo "created"                   # second time: mkdir fails, so echo does NOT run
+ls /nonexistent || echo "that folder is missing"  # echo runs because ls failed
+cd ~/practice ; ls ; pwd                          # all three run, one after another
+sleep 60 &                                        # runs in the background
 ```
 
 ### Combine them for useful patterns
 
 ```bash
 ping -c 1 192.168.56.101 &> /dev/null && echo "host is up" || echo "host is down"
-sudo apt update && sudo apt upgrade -y                                                                                                       # upgrade only if the update worked
+sudo apt update && sudo apt upgrade -y  # upgrade only if the update worked
 ```
 To see whether the last command succeeded, check the exit status: 0 means success and anything else means failure.
 
 ```bash
 ls /etc
-echo $?      # prints 0
+echo $?  # prints 0
 ls /nonexistent
-echo $?      # prints a non-zero number (2)
+echo $?  # prints a non-zero number (2)
 ```
 
 ## 21. Linux Boot Process
@@ -784,12 +784,12 @@ The **boot process** is the sequence of steps Linux follows when a computer or v
 ### Checking boot information
 
 ```bash
-uptime                          # show how long the system has been running
-who -b                          # show the last system boot time
-last reboot                     # show recorded reboot history
-uname -r                        # show the running kernel version
-ls /boot                        # list available kernel and boot files
-cat /proc/cmdline               # show parameters passed to the running kernel
+uptime             # show how long the system has been running
+who -b             # show the last system boot time
+last reboot        # show recorded reboot history
+uname -r           # show the running kernel version
+ls /boot           # list available kernel and boot files
+cat /proc/cmdline  # show parameters passed to the running kernel
 ```
 
 ### Understanding systemd startup
@@ -797,10 +797,10 @@ cat /proc/cmdline               # show parameters passed to the running kernel
 On most modern Kali and Ubuntu installations, `systemd` is PID 1 and manages services and system startup.
 
 ```bash
-ps -p 1 -o pid,comm,args                                          # identify process 1
-systemctl get-default                                                # show the default systemd target
-systemctl list-units --type=target                             # list currently loaded targets
-systemctl list-units --type=service                           # list loaded services
+ps -p 1 -o pid,comm,args             # identify process 1
+systemctl get-default                # show the default systemd target
+systemctl list-units --type=target   # list currently loaded targets
+systemctl list-units --type=service  # list loaded services
 ```
 
 Common systemd targets:
@@ -816,11 +816,11 @@ Common systemd targets:
 ### Viewing boot logs and timing
 
 ```bash
-journalctl -b                             # logs from the current boot
-journalctl -b -1                         # logs from the previous boot, if available
-journalctl -b -p err                   # error-priority messages from the current boot
-systemd-analyze                      # summary of startup time
-systemd-analyze blame           # services ordered by time spent during startup
+journalctl -b          # logs from the current boot
+journalctl -b -1       # logs from the previous boot, if available
+journalctl -b -p err   # error-priority messages from the current boot
+systemd-analyze        # summary of startup time
+systemd-analyze blame  # services ordered by time spent during startup
 ```
 
 `journalctl -b` is especially useful when investigating startup or service problems. Some commands may show limited information depending on permissions and the system's log retention settings.
@@ -836,10 +836,10 @@ Disk management means checking storage devices, partitions, available space, and
 ### Viewing disks and partitions
 
 ```bash
-lsblk                           # list disks, partitions, and mount points
-lsblk -f                        # include filesystem type, UUID, and labels
-sudo fdisk -l               # list partition tables on available disks
-sudo blkid                  # show filesystem types and UUIDs
+lsblk          # list disks, partitions, and mount points
+lsblk -f       # include filesystem type, UUID, and labels
+sudo fdisk -l  # list partition tables on available disks
+sudo blkid     # show filesystem types and UUIDs
 ```
 
 Example `lsblk` output (illustrative):
@@ -856,10 +856,10 @@ Here, `sda` is the disk, while `sda1` and `sda2` are partitions. Your actual dev
 ### Checking free and used space
 
 ```bash
-df -h                                    # free and used space on mounted filesystems
-df -T                                    # show filesystem type as well
-du -sh ~/practice                # total space used by one directory
-du -h --max-depth=1 ~       # show space used by each immediate home subdirectory
+df -h                  # free and used space on mounted filesystems
+df -T                  # show filesystem type as well
+du -sh ~/practice      # total space used by one directory
+du -h --max-depth=1 ~  # show space used by each immediate home subdirectory
 ```
 
 - `df` reports space available on filesystems.
@@ -870,10 +870,10 @@ du -h --max-depth=1 ~       # show space used by each immediate home subdirector
 A **mount point** is a directory where a filesystem becomes accessible.
 
 ```bash
-findmnt                            # show mounted filesystems in a tree
-findmnt /                         # show the filesystem mounted at /
-mount                              # list currently mounted filesystems
-cat /proc/mounts            # show kernel mount information
+findmnt           # show mounted filesystems in a tree
+findmnt /         # show the filesystem mounted at /
+mount             # list currently mounted filesystems
+cat /proc/mounts  # show kernel mount information
 ```
 
 For example, a separate storage device may be made accessible through a directory such as `/mnt/data`. The device must have a suitable filesystem and be mounted before its files can be accessed through that directory.
@@ -883,17 +883,17 @@ For example, a separate storage device may be made accessible through a director
 First identify the correct device:
 
 ```bash
-lsblk -f                    # identify the device and its filesystem
+lsblk -f  # identify the device and its filesystem
 ```
 
 If you have a suitable, already-formatted practice device and know its correct partition, an administrator can mount it at an existing directory:
 
 ```bash
 sudo mkdir -p /mnt/usb
-sudo mount /dev/sdX1 /mnt/usb             # example placeholder: replace with the verified partition
-findmnt /mnt/usb                                      # verify the mount
-ls /mnt/usb                                                 # view its contents
-sudo umount /mnt/usb                             # unmount before disconnecting the device
+sudo mount /dev/sdX1 /mnt/usb  # example placeholder: replace with the verified partition
+findmnt /mnt/usb               # verify the mount
+ls /mnt/usb                    # view its contents
+sudo umount /mnt/usb           # unmount before disconnecting the device
 ```
 
 `/dev/sdX1` is only a placeholder, not a device name to copy blindly. Confirm the device with `lsblk -f` first. Never unplug a mounted storage device without safely unmounting it.
@@ -903,8 +903,8 @@ sudo umount /mnt/usb                             # unmount before disconnecting 
 Swap is disk space Linux can use as a backing store for memory pages when needed. It is not a replacement for sufficient RAM.
 
 ```bash
-swapon --show       # show active swap areas
-free -h                     # show RAM and swap usage
+swapon --show  # show active swap areas
+free -h        # show RAM and swap usage
 ```
 
 ### Disk-management terms
@@ -935,10 +935,10 @@ A **filesystem** is the method Linux uses to organize, store, name, and retrieve
 ### Identify a filesystem
 
 ```bash
-lsblk -f                           # show filesystem type and mount point for each device
-sudo blkid                     # show filesystem type, UUID, and labels
-df -T                               # show filesystem types for mounted filesystems
-file -s /dev/sda1            # inspect filesystem/device signature (replace with a verified device)
+lsblk -f           # show filesystem type and mount point for each device
+sudo blkid         # show filesystem type, UUID, and labels
+df -T              # show filesystem types for mounted filesystems
+file -s /dev/sda1  # inspect filesystem/device signature (replace with a verified device)
 ```
 
 Use the actual device name shown by `lsblk`; `/dev/sda1` above is only an example.
@@ -948,9 +948,9 @@ Use the actual device name shown by `lsblk`; `/dev/sda1` above is only an exampl
 An **inode** stores metadata about a filesystem object, such as its type, owner, permissions, timestamps, and the locations of its data blocks. A filename is stored as a directory entry that refers to an inode.
 
 ```bash
-ls -i file.txt               # show the inode number of a file
-stat file.txt              # show file metadata, including inode and permissions
-df -i                          # show inode usage on mounted filesystems
+ls -i file.txt  # show the inode number of a file
+stat file.txt   # show file metadata, including inode and permissions
+df -i           # show inode usage on mounted filesystems
 ```
 
 A filesystem can run out of available inodes even when it still has free storage space. `df -i` helps check inode availability.
@@ -971,10 +971,10 @@ Examples:
 ### Viewing filesystem information
 
 ```bash
-findmnt                          # display mounted filesystems
-findmnt -t ext4              # display mounted ext4 filesystems
-df -hT                             # show space and filesystem type
-cat /etc/fstab                # view configured filesystem mount entries
+findmnt          # display mounted filesystems
+findmnt -t ext4  # display mounted ext4 filesystems
+df -hT           # show space and filesystem type
+cat /etc/fstab   # view configured filesystem mount entries
 ```
 
 ### Understanding /etc/fstab
@@ -999,9 +999,9 @@ Do not copy this placeholder entry into your system. Incorrect `/etc/fstab` entr
 ### Filesystem checks
 
 ```bash
-findmnt                    # identify where a filesystem is mounted
-df -h                         # check available space
-df -i                          # check inode availability
+findmnt  # identify where a filesystem is mounted
+df -h    # check available space
+df -i    # check inode availability
 ```
 
 Filesystem repair tools can modify filesystem metadata. They should only be used with the correct device identified and according to the filesystem's documentation; do not run repair operations on a mounted filesystem unless the tool explicitly supports that operation.
