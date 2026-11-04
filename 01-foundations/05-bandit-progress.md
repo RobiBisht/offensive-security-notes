@@ -24,6 +24,8 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 | 8 to 9 | Pipes, finding unique lines | sort, uniq -u, pipe (`\|`) |
 | 9 to 10 | Extracting readable strings from binary data | strings, grep, pipe (`|`) |
 | 10 to 11 | Decoding Base64-encoded data | cat, base64 -d |
+| 11 to 12 | ROT13, translating characters | tr, pipe (`\|`) |
+| 12 to 13 | Hex dumps, compression formats, archives | xxd -r, file, gunzip, bunzip2, tar, mktemp |
 
 
 
@@ -201,5 +203,46 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 **Learned:** Base64 is an encoding format that represents data using printable characters. It is not encryption, because it does not require a secret key. The `base64` command can encode and decode data. The `-d` option means decode.
 
 **Confusing:** The contents of `data.txt` looked like random letters, numbers and symbols. I initially thought it was encrypted, but it was Base64-encoded text. Using `base64 -d` decoded it and revealed the password.
+
+
+## Level 11 → 12
+
+**Goal:** decode a text file where every letter has been shifted by 13 places (ROT13).
+
+**Commands:**
+- `ssh bandit11@bandit.labs.overthewire.org -p 2220`: log in as the new user
+- `ls` and `cat data.txt`: the file held a sentence that looked like scrambled English
+- `cat data.txt | tr 'A-Za-z' 'N-ZA-Mn-za-m'`: translate each letter to the one 13 places further along
+  - `tr` replaces characters one for one: each character in the first set becomes the matching character in the second set
+  - `'A-Za-z'` is the set of all uppercase and lowercase letters
+  - `'N-ZA-Mn-za-m'` is the same letters shifted by 13, so A becomes N, B becomes O, and so on
+  - `|` sends the file's text into `tr`
+
+**Learned:** ROT13 is a Caesar cipher with a shift of 13. The alphabet has 26 letters, so running ROT13 twice gives back the original text, and the same command encodes and decodes. It's not real encryption, because there's no key and anyone can undo it, so it only hides text from a casual glance. `tr` doesn't take a file name, so it needs input from a pipe (`cat file | tr ...`) or from `<` (`tr ... < data.txt`). Numbers and punctuation stay the same, because only letters are in the sets.
+
+**Confusing:** I didn't understand how the two sets lined up until I tried `echo abc | tr 'a-c' 'x-z'`", or "Nothing".
+
+**Try it:** `echo "Hello" | tr 'A-Za-z' 'N-ZA-Mn-za-m'` gives `Uryyb`. Run the result through the same command and you get `Hello` back.
+
+
+## Level 12 → 13
+
+**Goal:** turn a hex dump of a file back into the original file, then unpack it through many layers of compression until the text inside is readable.
+
+**Commands:**
+- `ssh bandit12@bandit.labs.overthewire.org -p 2220`: log in as the new user
+- `mktemp -d`: create a temporary folder with a random name in `/tmp` (the level doesn't allow work in the home folder)
+- `cp data.txt /tmp/<folder>/` and `cd /tmp/<folder>`: copy the file there and work inside that folder
+- `xxd -r data.txt > data`: convert the hex dump back into binary data (`-r` means reverse)
+- `file data`: identify what kind of file it is, based on its contents rather than its name
+- `mv data data.gz` then `gunzip data.gz`: unpack a gzip file (gunzip needs the `.gz` ending)
+- `mv data data.bz2` then `bunzip2 data.bz2`: unpack a bzip2 file (bunzip2 needs the `.bz2` ending)
+- `tar -xf <file>`: extract a tar archive (`-x` extract, `-f` file); add `-C <folder>` to extract into a different folder
+
+**Learned:** The file's name and its real type are different things, so `file` is the tool to trust. The loop for the whole level is: run `file`, rename the file with the right extension, unpack it, then run `file` again, until it says ASCII text. `gunzip` and `bunzip2` refuse files without the right extension, which is why `mv` was needed each time. `xxd -r` reverses a hex dump, which is how a text file can hold a binary file.
+
+**Confusing:** I pasted several commands in one go, and when `gunzip` asked "do you wish to overwrite (y or n)?", it took my next pasted line as the answer, so the overwrite was skipped and the next command was lost. `bzip2` also complained that the output file already existed, because I had already run it once. I also made a typo in a file name (`cat extracted/dat8`), which gave "No such file or directory". Now I run one command at a time, check the result with `file` and `ls`, and use Tab to complete names.
+
+**Tip for next time:** Keep each unpacked file in its own clearly named folder, and run `ls` before every step so I always know which file I'm on.
 
 
