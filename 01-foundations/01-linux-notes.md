@@ -642,7 +642,7 @@ uptime
 
 These commands only display information; they do not change system configuration.
 
-## 17. Compression and Archives
+## 18. Compression and Archives
 
 ```bash
 tar -cvf archive.tar folder/      # create a tar archive
@@ -654,7 +654,7 @@ unzip archive.zip
 ```
 
 
-## 18. Shell Scripting Basics
+## 19. Shell Scripting Basics
 
 Create a file hello.sh:
 
@@ -691,7 +691,7 @@ done
 ```
 
 
-## 19. Text Editors: nano and Vim
+## 20. Text Editors: nano and Vim
 
 You will edit config files and scripts on machines that have no graphical editor, so learn both.
 
@@ -733,7 +733,7 @@ gg / G                	Jump to the top / bottom of the file
 A safe way to learn: run vimtutor in the terminal. It is a 30-minute interactive lesson built into most Linux systems.
 
 
-## 20. Chaining Commands: &&, ||, ; and &
+## 21. Chaining Commands: &&, ||, ; and &
 
 Operators let you control when the next command runs.
 
@@ -768,7 +768,7 @@ ls /nonexistent
 echo $?  # prints a non-zero number (2)
 ```
 
-## 21. Linux Boot Process
+## 22. Linux Boot Process
 
 The **boot process** is the sequence of steps Linux follows when a computer or virtual machine is switched on. Understanding it helps with troubleshooting startup problems and understanding how Linux services begin running.
 
@@ -827,7 +827,7 @@ systemd-analyze blame  # services ordered by time spent during startup
 
 ---
 
-## 22. Disk Management
+## 23. Disk Management
 
 Disk management means checking storage devices, partitions, available space, and mounted filesystems. A disk is a physical or virtual storage device; a partition is a defined region of that disk.
 
@@ -916,7 +916,7 @@ free -h        # show RAM and swap usage
 - **UUID:** A filesystem identifier that can be used to refer to a filesystem consistently.
 
 
-## 23. Linux File Systems
+## 24. Linux File Systems
 
 A **filesystem** is the method Linux uses to organize, store, name, and retrieve files and directories on storage devices. Linux supports several filesystem types.
 
@@ -1007,48 +1007,80 @@ df -i    # check inode availability
 Filesystem repair tools can modify filesystem metadata. They should only be used with the correct device identified and according to the filesystem's documentation; do not run repair operations on a mounted filesystem unless the tool explicitly supports that operation.
 
 
-## 24. Linux Practice Exercises
+## 25. Linux Practice Exercises
 
-### Practice Each Question On Your Own For 10 To 15 Mins Then See The Answer.
+### Practical exercises
 
-1. Run `man` on `ls`, `cp`, and `grep`, and write down three useful flags for each.
+Try completing each question yourself without looking at the commands in your notes.
 
-2. In `~/practice`, create the structure `projects/web`, `projects/network`, and `notes`. Create three text files, copy one, rename one, and delete one.
+1. Getting Help and Flags (Switches)
+Use man and --help to find three useful flags for ls, cp, and grep. Explain what each flag does.
 
-3. Find every file on your system whose name ends in `.conf`. Then find the SUID binaries and write down five of them.
+2. Navigating and Managing Files
+Inside ~/practice, create projects/web, projects/network, and notes. Create three text files, copy one, rename one, and delete one.
 
-4. Print a sorted list of all usernames on your system, one per line, and save it to `users.txt`.
+3. Finding Things: find, locate, grep, which
+Find every .txt file inside your home directory, search for the word root in /etc/passwd, and locate the executable path of Python 3.
 
-5. Create `secret.txt` and set it so only you can read and write it. Create a second user, switch to them with `su`, and confirm they cannot read the file.
+4. Pipes, Redirection and Text Processing
+Extract usernames from /etc/passwd, sort them alphabetically, and save the output into users.txt. Then count how many usernames are present.
 
-6. Explain in your own words why `/etc/shadow` is only readable by root while `/etc/passwd` is readable by everyone.
+5. Users, Groups and Permissions
+Create a file named script.sh, give its owner read, write, and execute permissions while giving the group and others read and execute permissions. Verify its permissions using ls -l.
 
-7. Log in from Kali to Ubuntu, create a file there, and download it back with `scp`. Then disable password login in `/etc/ssh/sshd_config` on Ubuntu to see how key-only login works (take a snapshot first).
+6. Important Directories
+Explore /etc, /var/log, /tmp, /home, and /proc. Identify what each directory contains and display your Linux distribution information.
 
-8. Start a `sleep 600` process in the background, find its PID with `ps aux | grep sleep`, and kill it.
+7. SSH: Logging In to a Remote Machine
+Configure SSH on your Ubuntu VM, connect to it from Kali using SSH, and transfer a text file between the two machines using scp.
 
-9. Add a cron job that writes the date to `/tmp/cron-test.txt` every minute. Wait 2 minutes, check the file, then remove the job.
+8. Basic Networking Commands
+Display your IP address, routing table, listening ports, and DNS configuration. Then test connectivity to your Ubuntu VM using ping.
 
-10. Start two `sleep` processes, pause one and kill the other with different signals, and confirm each result with `ps aux`.
+9. Processes and Services
+Find the SSH process, display all running processes, check the SSH service status, and restart the SSH service using systemctl.
 
-11. Install `tree`, run `tree ~/practice` to view your folder structure, then remove it.
+10. Scheduled Tasks: Cron Jobs
+Create a cron job that writes the current date and time into /tmp/time.log every five minutes. Verify your cron configuration.
 
-12. Try to SSH into the Ubuntu VM with a wrong password twice from Kali. Then find those `Failed password` lines in the log on Ubuntu.
+11. Process IDs and Signals in Depth
+Start sleep 600 in the background, find its PID, pause it using SIGSTOP, resume it using SIGCONT, and terminate it gracefully using SIGTERM.
 
-13. Read your `/etc/apt/sources.list` and the files in `sources.list.d/`, and write in your notes what each line means (type of source, URL, release name, components).
+12. Package Management
+Search for the tree package, install it, verify its installation, and then remove it using apt.
 
-14. Write a script that takes a file name as an argument and tells you whether it exists, its size, and its permissions.
+13. Logs
+Display the last 20 authentication log entries, find failed password login attempts, and inspect the SSH service logs using journalctl.
 
-15. Use Vim to create `hello.sh`, write a three-line script, save it, make it executable, and run it. Then open `/etc/passwd` with Vim and quit with `:q!` so you cannot damage anything.
+14. apt Repositories and Third-Party Software Sources
+Display your configured apt repositories, explain the purpose of GPG signing keys, and identify where additional repository configuration files are stored.
 
-16. Write one line that creates a folder, enters it, and creates a file inside it, so that it stops cleanly if any step fails.
+15. Environment Variables and PATH
+Display $HOME, $USER, and $PATH. Create a temporary environment variable named MYVAR, display its value, and create an alias named ll for ls -lah.
 
-17. Identify your current shell and display the SHELL environment variable.
+16. Shell Fundamentals
+Identify your current shell, distinguish between a shell builtin and an executable command, and demonstrate the difference between single and double quotes when displaying $HOME.
 
-18. Display your Linux distribution, kernel version, CPU information, RAM usage, and system uptime.
+17. System Information and Identification
+Display your Linux distribution, kernel version, CPU information, RAM usage, disk information, and system uptime using appropriate commands.
 
-19. Check the boot messages and identify the service manager used by your system.
+18. Compression and Archives
+Create a folder containing three text files, compress it into archive.tar.gz, extract the archive into another directory, and verify that all files were recovered.
 
-20. Use lsblk, df -h, and findmnt to inspect disks, partitions, and mounted filesystems.
+19. Shell Scripting Basics
+Create an executable Bash script that accepts a username as an argument, prints a greeting, counts from 1 to 5 using a loop, and checks whether /etc/passwd exists.
 
-21. Identify the filesystem type of your root (/) partition and explain what a mount point is.
+20. Text Editors: nano and Vim
+Create a text file using nano, save it, reopen it using Vim, modify its contents, and save and exit Vim using the appropriate commands.
+
+21. Chaining Commands: &&, ||, ; and &
+Create a directory and enter it using &&. Use || to display an error message when a directory does not exist. Run sleep 60 in the background using &.
+
+22. Linux Boot Process
+Explain the six main stages of the Linux boot process in order. Then identify PID 1, your default systemd target, and the boot time using Linux commands.
+
+23. Disk Management
+Display your disks, partitions, mounted filesystems, available storage space, and active swap areas. Explain the difference between a disk, partition, and mount point.
+
+24. Linux File Systems
+Identify the filesystem type of your Linux root partition, display its UUID, find the inode number of a file, and explain the purpose of /etc/fstab.
