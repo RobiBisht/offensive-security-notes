@@ -1007,7 +1007,7 @@ df -i    # check inode availability
 Filesystem repair tools can modify filesystem metadata. They should only be used with the correct device identified and according to the filesystem's documentation; do not run repair operations on a mounted filesystem unless the tool explicitly supports that operation.
 
 
-## 24. Practice
+## 24. Linux Practice Exercises
 
 ### Practice Each Question On Your Own For 10 To 15 Mins Then See The Answer.
 

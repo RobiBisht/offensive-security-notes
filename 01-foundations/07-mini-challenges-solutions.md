@@ -1,513 +1,1000 @@
-**Only See This After Practicing Each Question By Own For At Least 10 Minutes*
+# Linux Practice Exercises – Solutions
 
-Perform these exercises in your Kali and Ubuntu VMs rather than just copying the commands. They cover important Linux fundamentals used in system administration, networking, and cybersecurity labs.
+## 1. Using man pages for ls, cp, and grep
 
-## 1. Create the folder structure lab/web, lab/network, lab/notes with one .txt file in each.
-
-### Command : 
+Use the `man` command to read manual pages.
 
 ```bash
-mkdir -p lab/web lab/network lab/notes
+man ls
+man cp
+man grep
 ```
 
-### Create one file in each folder:
+Press `q` to exit the manual.
+
+### Useful flags
+
+**ls**
+- `-l` – Display detailed information.
+- `-a` – Show hidden files.
+- `-h` – Display sizes in human-readable format when used with `-l`.
+
+**cp**
+- `-r` – Copy directories recursively.
+- `-i` – Ask before overwriting.
+- `-v` – Show copied files.
+
+**grep**
+- `-i` – Ignore case.
+- `-n` – Display line numbers.
+- `-r` – Search recursively inside directories.
+
+---
+
+## 2. Creating directories and managing files
+
+Create the required directory structure:
 
 ```bash
-touch lab/web/web.txt
-touch lab/network/network.txt
-touch lab/notes/notes.txt
+mkdir -p ~/practice/projects/web
+mkdir -p ~/practice/projects/network
+mkdir -p ~/practice/notes
 ```
 
-### Verify : 
+Enter the practice directory:
 
 ```bash
-tree lab
+cd ~/practice
 ```
 
-### Expected output:
-
-```text
-lab
-├── network
-│   └── network.txt
-├── notes
-│   └── notes.txt
-└── web
-    └── web.txt
-```
-
-- mkdir – Creates directories.
-- -p – Creates parent directories if needed.
-- touch – Creates an empty file.
-- tree – Displays directory structure.
-
-
-## 2. Find all files in /etc that are readable by everyone and end in .conf. Save the list to a file.
-
-### Command : 
+Create three text files:
 
 ```bash
-find /etc -type f -name "*.conf" -perm -004 2>/dev/null > readable_conf.txt
+touch file1.txt file2.txt file3.txt
 ```
 
-### Explanation:
-
-- find /etc – Searches inside /etc.
-- -type f – Finds regular files only.
-- -name "*.conf" – Finds files ending in .conf.
-- -perm -004 – Finds files with the read permission for others.
-- 2>/dev/null – Hides permission error messages.
-- > – Saves the output into a file.
-
-
-### Verify :
+Write some content:
 
 ```bash
-cat readable_conf.txt
+echo "Web development notes" > file1.txt
+echo "Network security notes" > file2.txt
+echo "Linux notes" > file3.txt
 ```
 
-Note: -perm -004 checks whether the others-read permission bit is set, not whether the file is necessarily accessible through every parent directory.
-
-
-## 3. List all users on the system with /bin/bash as their shell, sorted alphabetically.
-
-### Command : 
+Copy one file:
 
 ```bash
-awk -F: '$7 == "/bin/bash" {print $1}' /etc/passwd | sort
+cp file1.txt file1-copy.txt
 ```
 
-### Explanation:
-
-- awk – Processes text data.
-- -F: – Uses : as the field separator.
-- $7 – Represents the seventh field (login shell).
-- $1 – Represents the first field (username).
-- sort – Sorts usernames alphabetically.
-- | – Sends the output of one command to another.
-
-### Example output:
-
-```text
-kali
-root
-student
-```
-Your actual output depends on the users on your system.
-
-
-## 4. Create a user named guest1, make a file only you can read, and prove guest1 cannot read it.
-
-### Step 1: Create the user
+Rename one file:
 
 ```bash
-sudo adduser guest1
+mv file2.txt network-notes.txt
 ```
 
-Follow the prompts to set a password.
-
-### Step 2: Create a private file
+Delete one file:
 
 ```bash
-echo "This is my private file" > private.txt
-```
-
-### Step 3: Give read/write permission only to the owner
-
-```bash
-chmod 600 private.txt
-```
-
-### Step 4: Verify permissions
-
-```bash
-ls -l private.txt
-```
-
-### Expected:
-
-```text
--rw------- 1 kali kali ... private.txt
-```
-
-### Step 5: Switch to guest1
-
-```bash
-su - guest1
-```
-
-### Step 6: Try reading the file
-
-```bash
-cat /home/kali/private.txt
-```
-
-### Expected:
-
-```text
-Permission denied
-```
-
-### Step 7: Return to your original user
-
-```bash
-exit
-```
-
-Why does it fail?
-
-chmod 600 means:
-
-Permission                	 Value
-
-Owner                    	  Read + Write (6)
-Group	                        None (0)
-Others                     	None (0)
-
-Therefore, guest1 cannot read the file.
-
-
-## 5. SSH from Kali to Ubuntu, create a file on Ubuntu, and download it with scp.
-
-You need two running VMs.
-
-Kali VM SSH client (sender/requester)
-
-Ubuntu VM SSH server (remote machine)
-
-### Step 1: Find Ubuntu's IP address
-
-On Ubuntu:
-
-```bash
-ip addr
-```
-
-Look for the IP address associated with your network interface, such as : 192.168.1.105
-
-### Step 2: Install and enable SSH server on Ubuntu
-
-```bash
-sudo apt update
-sudo apt install openssh-server -y
-sudo systemctl enable --now ssh
-```
-
-Check:
-
-```bash
-sudo systemctl status ssh
-```
-
-### Step 3: Connect from Kali to Ubuntu
-
-On Kali:
-
-```bash
-ssh ubuntu_username@192.168.1.105
-```
-
-Replace :
-
-- ubuntu_username with your Ubuntu username.
-- 192.168.1.105 with Ubuntu's actual IP.
-
-Enter the Ubuntu user's password when prompted.
-
-### Step 4: Create a file on Ubuntu
-
-After connecting:
-
-```bash
-echo "Hello from Ubuntu" > remote.txt
+rm file3.txt
 ```
 
 Verify:
 
 ```bash
-ls
-cat remote.txt
+ls -l
+tree ~/practice
 ```
 
-### Step 5: Exit SSH
+---
+
+## 3. Finding .conf files and SUID binaries
+
+### Find all .conf files
+
+```bash
+sudo find / -type f -name "*.conf" 2>/dev/null
+```
+
+Explanation:
+- `/` – Start searching from the root directory.
+- `-type f` – Search only regular files.
+- `-name "*.conf"` – Match names ending in `.conf`.
+- `2>/dev/null` – Hide permission-denied messages.
+
+### Find SUID binaries
+
+```bash
+sudo find / -type f -perm -4000 2>/dev/null
+```
+
+Display five SUID binaries:
+
+```bash
+sudo find / -type f -perm -4000 2>/dev/null | head -n 5
+```
+
+SUID files execute with the effective permissions of their file owner.
+
+Examples commonly found on Linux include:
+
+- `/usr/bin/passwd`
+- `/usr/bin/su`
+- `/usr/bin/sudo`
+- `/usr/bin/chsh`
+- `/usr/bin/chfn`
+
+The actual list depends on the distribution and installed packages. Use your command output as the authoritative list.
+
+---
+
+## 4. Printing sorted usernames into users.txt
+
+Extract usernames from `/etc/passwd`, sort them, and save them:
+
+```bash
+cut -d: -f1 /etc/passwd | sort > users.txt
+```
+
+Display the file:
+
+```bash
+cat users.txt
+```
+
+Explanation:
+- `cut` – Extract selected fields.
+- `-d:` – Use colon as the delimiter.
+- `-f1` – Extract the first field.
+- `sort` – Sort alphabetically.
+- `>` – Save output into a file.
+
+---
+
+## 5. File permissions and testing another user
+
+Create the file:
+
+```bash
+cd ~/practice
+touch secret.txt
+```
+
+Set permissions so only the owner can read and write:
+
+```bash
+chmod 600 secret.txt
+```
+
+Verify:
+
+```bash
+ls -l secret.txt
+```
+
+Expected permissions:
+
+```text
+-rw------- 1 username username ... secret.txt
+```
+
+Create a second user:
+
+```bash
+sudo adduser testuser
+```
+
+Switch to that user:
+
+```bash
+su - testuser
+```
+
+Try reading the file:
+
+```bash
+cat /home/yourusername/practice/secret.txt
+```
+
+Expected result:
+
+```text
+Permission denied
+```
+
+Replace `yourusername` with your actual username.
+
+Return to your original user:
 
 ```bash
 exit
 ```
 
-### Step 6: Download the file using SCP
+**Note:** If the parent directory permissions prevent traversal, the second user may receive permission denied even before reaching the file. This is also a valid access-control result.
 
-On Kali:
+---
+
+## 6. Why /etc/shadow is restricted but /etc/passwd is readable
+
+### /etc/passwd
+
+The `/etc/passwd` file contains account information such as:
+
+- Username
+- User ID (UID)
+- Group ID (GID)
+- Home directory
+- Login shell
+
+It is readable by ordinary users because Linux applications need to look up usernames and account information.
+
+### /etc/shadow
+
+The `/etc/shadow` file contains password hashes and password-aging information.
+
+It is restricted because password hashes must not be exposed to ordinary users. If attackers obtain these hashes, they may attempt offline password guessing.
+
+Therefore:
+
+- `/etc/passwd` is generally readable by everyone.
+- `/etc/shadow` is normally readable only by root or authorized privileged processes.
+
+Check permissions:
 
 ```bash
-scp ubuntu_username@192.168.1.105:~/remote.txt .
+ls -l /etc/passwd /etc/shadow
 ```
 
-### Step 7: Verify
+---
+
+## 7. SSH from Kali to Ubuntu and SCP file transfer
+
+### On Ubuntu
+
+Install SSH server:
 
 ```bash
-ls
-cat remote.txt
+sudo apt update
+sudo apt install openssh-server
 ```
 
-You have now downloaded the file from Ubuntu to Kali.
+Start SSH:
 
+```bash
+sudo systemctl enable --now ssh
+```
 
-## 6. Add a cron job that logs the date every minute, confirm it works, then remove it.
+Find Ubuntu IP:
 
-### Step 1: Open the cron editor
+```bash
+ip -br addr
+```
+
+### From Kali
+
+Connect to Ubuntu:
+
+```bash
+ssh ubuntu_username@ubuntu_ip
+```
+
+Create a file on Ubuntu:
+
+```bash
+echo "File created on Ubuntu" > remote.txt
+```
+
+Exit SSH:
+
+```bash
+exit
+```
+
+Download the file to Kali:
+
+```bash
+scp ubuntu_username@ubuntu_ip:~/remote.txt ~/remote.txt
+```
+
+Verify:
+
+```bash
+cat ~/remote.txt
+```
+
+### SSH key authentication
+
+On Kali, generate a key:
+
+```bash
+ssh-keygen -t ed25519
+```
+
+Copy the public key to Ubuntu:
+
+```bash
+ssh-copy-id ubuntu_username@ubuntu_ip
+```
+
+Test key login:
+
+```bash
+ssh ubuntu_username@ubuntu_ip
+```
+
+### Disable password authentication on Ubuntu
+
+First take a VirtualBox snapshot.
+
+Edit SSH configuration:
+
+```bash
+sudo vim /etc/ssh/sshd_config
+```
+
+Set:
+
+```text
+PubkeyAuthentication yes
+PasswordAuthentication no
+```
+
+Validate configuration:
+
+```bash
+sudo sshd -t
+```
+
+Restart SSH:
+
+```bash
+sudo systemctl restart ssh
+```
+
+Test key login from Kali.
+
+**Important:** Keep your existing SSH session open until a new key-based session successfully connects. Otherwise, you could lock yourself out.
+
+---
+
+## 8. Background process and killing it
+
+Start a background process:
+
+```bash
+sleep 600 &
+```
+
+Find its PID:
+
+```bash
+ps aux | grep sleep
+```
+
+A cleaner alternative:
+
+```bash
+pgrep -a sleep
+```
+
+Kill the process:
+
+```bash
+kill PID
+```
+
+Replace `PID` with the actual process ID.
+
+Verify:
+
+```bash
+ps aux | grep sleep
+```
+
+---
+
+## 9. Creating and removing a cron job
+
+Open your user's crontab:
 
 ```bash
 crontab -e
 ```
 
-### Step 2: 
+Add:
 
-```bash
-* * * * * date >> ~/date_log.txt
+```cron
+* * * * * date >> /tmp/cron-test.txt
 ```
 
-Explanation:
+This appends the current date and time every minute.
 
-Field        	Meaning
+Wait approximately two minutes.
 
-First *       	Every minute
-Second *      	Every hour
-Third *      	Every day of the month
-Fourth *   	Every month
-Fifth *      	Every day of the week
-
-date prints the current date and time.
-
->> appends the output to the file instead of overwriting it.
-
-### Step 3: Verify the cron job
-
-Wait 1–2 minutes.
+Check the file:
 
 ```bash
-cat ~/date_log.txt
+cat /tmp/cron-test.txt
 ```
 
-You should see timestamps.
-
-### Step 4: Remove the cron job
+Remove the job:
 
 ```bash
 crontab -e
 ```
 
-Delete this line : 
+Delete the cron line and save.
 
-```bash
-* * * * * date >> ~/date_log.txt
-```
-
-Save and exit.
-
-### Step 5: Confirm removal
+Verify:
 
 ```bash
 crontab -l
 ```
 
-The date logging job should no longer appear.
+---
 
+## 10. Pause one process and kill another using different signals
 
-## 7. Install tree, view your lab folder, and remove the package.
+Start two processes:
 
+```bash
+sleep 600 &
+sleep 600 &
+```
 
-Step 1: Install tree
+Find their PIDs:
 
+```bash
+pgrep -a sleep
+```
+
+Assume the PIDs are `1111` and `2222`.
+
+Pause the first process:
+
+```bash
+kill -STOP 1111
+```
+
+Check:
+
+```bash
+ps -o pid,stat,cmd -p 1111
+```
+
+The process state should contain `T`, meaning stopped.
+
+Resume it:
+
+```bash
+kill -CONT 1111
+```
+
+Kill the second process with SIGTERM:
+
+```bash
+kill -TERM 2222
+```
+
+Verify:
+
+```bash
+ps aux | grep sleep
+```
+
+Signal meanings:
+
+- `SIGSTOP` – Stop a process immediately.
+- `SIGCONT` – Continue a stopped process.
+- `SIGTERM` – Request graceful termination.
+- `SIGKILL` – Force immediate termination.
+
+---
+
+## 11. Installing and removing tree
+
+Install:
+
+```bash
 sudo apt update
-sudo apt install tree -y
+sudo apt install tree
+```
 
+Display the practice structure:
 
-Step 2: View your lab folder
+```bash
+tree ~/practice
+```
 
-tree lab
+Remove the package:
 
+```bash
+sudo apt remove tree
+```
 
-Step 3: Remove tree
+---
 
-sudo apt remove tree -y
+## 12. Failed SSH login attempts and log analysis
 
+From Kali, attempt SSH login to Ubuntu using an incorrect password twice:
 
-Step 4: Verify removal
+```bash
+ssh ubuntu_username@ubuntu_ip
+```
 
-tree --version
+Enter an incorrect password two times.
 
-The command should no longer be available.
+### On Ubuntu
 
-Note: apt remove removes the package but may leave configuration files behind.
+Search authentication logs:
 
-
-8. Count the number of failed SSH login attempts in the logs after you deliberately fail twice.
-
-First, ensure SSH is running on Ubuntu.
-
-
-Step 1: On Kali, deliberately attempt two unsuccessful logins
-
-ssh wronguser@UBUNTU_IP
-
-
-Enter an incorrect password if prompted.
-
-Repeat the failed attempt once more.
-
-
-Step 2: On Ubuntu, inspect SSH authentication logs
-
+```bash
 sudo grep "Failed password" /var/log/auth.log
+```
 
+Display the latest failed attempts:
 
-Step 3: Count failed password attempts
+```bash
+sudo grep "Failed password" /var/log/auth.log | tail
+```
 
-sudo grep -c "Failed password" /var/log/auth.log
+Filter by SSH:
 
-Example output : 2
+```bash
+sudo grep sshd /var/log/auth.log | grep "Failed password"
+```
 
-Important:
+Typical log information includes:
 
-- This counts all matching failed-password entries in the log, not necessarily just your two attempts.
-- If your system uses systemd journal logging instead, try:
+- Timestamp
+- SSH service name
+- Username attempted
+- Source IP address
+- Authentication failure message
 
-sudo journalctl -u ssh --since "10 minutes ago" | grep -c "Failed password"
+On systems using journald without `/var/log/auth.log`, use:
 
-For a more precise count, use a time window that contains only your two test attempts.
+```bash
+sudo journalctl -u ssh
+```
 
+---
 
-9. Write a script that prints the names of all files larger than 1 MB in your home folder.
+## 13. Understanding APT sources
 
+Read the main sources file:
 
-Step 1: Create a script
+```bash
+cat /etc/apt/sources.list
+```
 
-nano large_files.sh
+List source files:
 
+```bash
+ls -l /etc/apt/sources.list.d/
+```
 
-Step 2: Write this script
+Read source files:
 
-#!/bin/bash
+```bash
+cat /etc/apt/sources.list.d/*.list
+```
 
-echo "Files larger than 1 MB:"
+For Deb822 source files:
 
-find "$HOME" -type f -size +1M -print
+```bash
+cat /etc/apt/sources.list.d/*.sources
+```
 
+### Example traditional source
 
-Step 3: Save and exit nano
-
-- Ctrl + O – Save.
-- Enter – Confirm filename.
-- Ctrl + X – Exit.
-
-
-Step 4: Make the script executable
-
-chmod +x large_files.sh
-
-
-Step 5: Run the script
-
-./large_files.sh
+```text
+deb http://archive.ubuntu.com/ubuntu noble main universe
+```
 
 Explanation:
 
-- #!/bin/bash – Specifies Bash as the interpreter.
-- $HOME – Represents your home directory.
-- -type f – Searches regular files.
-- -size +1M – Finds files larger than 1 MiB.
-- -print – Prints the file paths.
-- chmod +x – Gives execute permission.
+- `deb` – Binary package repository.
+- `http://archive.ubuntu.com/ubuntu` – Repository URL.
+- `noble` – Ubuntu release codename.
+- `main` – Officially supported open-source software.
+- `universe` – Community-maintained open-source software.
 
+Other common components:
 
+- `restricted` – Software with restricted licensing or distribution conditions.
+- `multiverse` – Software with licensing or other restrictions.
 
-10. Share a file from one VM to the other using python3 -m http.server and wget.
+### Example Kali source
 
+```text
+deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware
+```
 
-For this exercise:
+Explanation:
 
+- `deb` – Binary packages.
+- `http://http.kali.org/kali` – Repository URL.
+- `kali-rolling` – Kali rolling release.
+- `main` – Main Kali repository.
+- `contrib` – Contributions depending on packages outside main.
+- `non-free` – Non-free software.
+- `non-free-firmware` – Non-free firmware packages.
 
-- Ubuntu = Server (shares the file).
-- Kali = Client (downloads the file).
+Update package information:
 
+```bash
+sudo apt update
+```
 
-Step 1: Create a file on Ubuntu
+---
 
-echo "Hello from Ubuntu VM" > shared.txt
+## 14. Bash script to check file existence, size, and permissions
 
+Create the script:
 
-Step 2: Start the Python HTTP server on Ubuntu
+```bash
+nano file_info.sh
+```
 
-python3 -m http.server 8000
+Write:
 
-Expected output:
+```bash
+#!/bin/bash
 
-Serving HTTP on 0.0.0.0 port 8000
+file="$1"
 
-Keep this terminal open.
+if [ -z "$file" ]; then
+    echo "Usage: $0 filename"
+    exit 1
+fi
 
+if [ -e "$file" ]; then
+    echo "File exists: $file"
+    echo "Size: $(stat -c %s "$file") bytes"
+    echo "Permissions: $(stat -c %A "$file")"
+else
+    echo "File does not exist: $file"
+fi
+```
 
-Step 3: Find Ubuntu's IP address
+Save the file.
 
-Open another Ubuntu terminal:
+Make executable:
 
-hostname -I
+```bash
+chmod +x file_info.sh
+```
 
-Example : 192.168.1.105
+Run:
 
+```bash
+./file_info.sh secret.txt
+```
 
-Step 4: Download the file from Kali
+Example output:
 
-On Kali:
+```text
+File exists: secret.txt
+Size: 0 bytes
+Permissions: -rw-------
+```
 
-wget http://192.168.1.105:8000/shared.txt
+Test a nonexistent file:
 
-Replace the IP with your Ubuntu IP.
+```bash
+./file_info.sh missing.txt
+```
 
+---
 
-Step 5: Verify the downloaded file
+## 15. Creating and executing a shell script using Vim
 
-cat shared.txt
+Open Vim:
 
-Expected:
+```bash
+vim hello.sh
+```
 
-Hello from Ubuntu VM
+Press `i` to enter insert mode.
 
+Write:
 
-Step 6: Stop the HTTP server
+```bash
+#!/bin/bash
+echo "Hello, Linux!"
+echo "This is my first script."
+```
 
-Return to Ubuntu's server terminal and press:
+Press `Esc`.
 
-Ctrl + C
+Save and exit:
 
-The HTTP server is now stopped.
+```vim
+:wq
+```
 
-Note: Both VMs must have network connectivity. VirtualBox Host-only or Bridged networking can work; NAT may require port forwarding depending on your setup.
+Make executable:
 
+```bash
+chmod +x hello.sh
+```
 
+Run:
 
+```bash
+./hello.sh
+```
 
-Quick revision
+### Safely opening /etc/passwd
 
-No.	                        Linux command	                                Purpose
+```bash
+vim /etc/passwd
+```
 
-1	                              mkdir -p	                          Create nested directories
+Quit without saving:
 
-2	                                find	                                              Search files
+```vim
+:q!
+```
 
-3	                            awk, sort	                             Process and sort text
+---
 
-4	                     adduser, chmod, su	          User and permission management
+## 16. Creating a directory, entering it, and creating a file in one line
 
-5	                             ssh, scp	                      Remote login and file transfer
+Use:
 
-6	                             crontab	                                 Schedule tasks
+```bash
+mkdir myfolder && cd myfolder && touch myfile.txt
+```
 
-7	                  apt install, apt remove	           Package management
+Explanation:
 
-8	                       grep, journalctl	                           Log analysis
+- `mkdir myfolder` – Create directory.
+- `&&` – Execute the next command only if the previous command succeeds.
+- `cd myfolder` – Enter the directory.
+- `touch myfile.txt` – Create a file.
 
-9	                           nano, find	                                  Shell scripting
+This stops cleanly if any command fails.
 
-10	             python3 -m http.server, wget         	       HTTP file sharing
+---
+
+## 17. Identifying the current shell
+
+Display the current shell process:
+
+```bash
+ps -p $$ -o comm=
+```
+
+Display the SHELL environment variable:
+
+```bash
+echo "$SHELL"
+```
+
+Example:
+
+```text
+bash
+/bin/bash
+```
+
+Note that `$SHELL` normally shows your configured login shell, while `ps` shows the shell process currently running.
+
+---
+
+## 18. Displaying system information
+
+### Linux distribution
+
+```bash
+cat /etc/os-release
+```
+
+Short version:
+
+```bash
+lsb_release -a
+```
+
+### Kernel version
+
+```bash
+uname -r
+```
+
+Complete kernel information:
+
+```bash
+uname -a
+```
+
+### CPU information
+
+```bash
+lscpu
+```
+
+Detailed CPU information:
+
+```bash
+cat /proc/cpuinfo
+```
+
+### RAM usage
+
+```bash
+free -h
+```
+
+### System uptime
+
+```bash
+uptime
+```
+
+Human-readable uptime:
+
+```bash
+uptime -p
+```
+
+---
+
+## 19. Checking boot messages and identifying the service manager
+
+Display boot messages:
+
+```bash
+sudo dmesg
+```
+
+Display the latest messages:
+
+```bash
+sudo dmesg | tail -n 30
+```
+
+Display boot logs:
+
+```bash
+journalctl -b
+```
+
+Identify the service manager:
+
+```bash
+ps -p 1 -o comm=
+```
+
+Check systemd:
+
+```bash
+systemctl --version
+```
+
+On Kali Linux and Ubuntu, the service manager is normally:
+
+```text
+systemd
+```
+
+Systemd manages services, startup processes, and system initialization.
+
+---
+
+## 20. Inspecting disks, partitions, and mounted filesystems
+
+### lsblk
+
+```bash
+lsblk
+```
+
+Detailed output:
+
+```bash
+lsblk -f
+```
+
+Shows:
+
+- Disk devices
+- Partitions
+- Filesystem types
+- UUIDs
+- Mount points
+
+### df -h
+
+```bash
+df -h
+```
+
+Shows filesystem disk usage in human-readable units.
+
+### findmnt
+
+```bash
+findmnt
+```
+
+Display the root filesystem:
+
+```bash
+findmnt /
+```
+
+Display filesystem type and mount options:
+
+```bash
+findmnt -o TARGET,SOURCE,FSTYPE,OPTIONS
+```
+
+---
+
+## 21. Identifying the root filesystem and explaining mount points
+
+### Identify root filesystem type
+
+Run:
+
+```bash
+findmnt -no SOURCE,FSTYPE /
+```
+
+Example output:
+
+```text
+/dev/sda2 ext4
+```
+
+This means:
+
+- `/dev/sda2` – Device containing the root filesystem.
+- `ext4` – Filesystem type.
+
+Your system might use ext4, btrfs, xfs, or another filesystem.
+
+### What is a mount point?
+
+A mount point is a directory where a filesystem is attached and made accessible within the Linux directory hierarchy.
+
+Examples:
+
+- `/` – Root filesystem.
+- `/home` – User files, if separately mounted.
+- `/boot` – Boot files, if separately mounted.
+- `/mnt` – Common temporary mount location.
+- `/media` – Common location for removable media.
+
+Linux combines multiple filesystems into a single directory tree rather than assigning a separate drive letter to each filesystem.
+
+Example:
+
+```text
+/
+├── home
+├── boot
+├── etc
+├── usr
+├── var
+└── mnt
+```
+
+A filesystem mounted at `/home` becomes accessible through the `/home` directory.
+
+Check mount points:
+
+```bash
+findmnt
+```
+
+Check the root filesystem:
+
+```bash
+df -h /
+```
+
+---
