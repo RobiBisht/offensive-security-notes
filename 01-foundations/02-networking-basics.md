@@ -284,4 +284,3 @@ ipcalc 192.168.10.37/27
 #### My own practice problems
 
 (Add 3 subnetting problems I solved by hand, with the working, and check each with `ipcalc` or Python.)
-
