@@ -2,6 +2,17 @@
 
 My notes on networking for security. Practiced in my Kali and Ubuntu VMs.
 
+## Contents
+
+1. [Models and layers](#1-models-and-layers)
+2. [IP addressing](#2-ip-addressing)
+3. [Subnetting](#3-subnetting)
+4. [Core protocols](#4-core-protocols)
+5. [Commands I practiced](#5-commands-i-practiced)
+6. [Packet analysis with Wireshark](#6-packet-analysis-with-wireshark)
+7. [Port scanning with Nmap](#7-port-scanning-with-nmap)
+
+
 ## 1. Models and layers
 
 ### 1.1 OSI model (7 layers)
@@ -716,4 +727,435 @@ sudo nmap -sn 192.168.1.0/24   # ping sweep to find live hosts (my own network o
 
 A reply with TTL 64 usually means Linux or Mac, 128 usually Windows, and 255 usually network gear. This is a rough OS hint, because the TTL drops by one per hop.
 
+### 4.7 Common ports
 
+A port (0 to 65535) identifies a service on a host. An IP address plus a port is a **socket**. Ports 0 to 1023 are **well-known**, 1024 to 49151 are **registered**, and 49152 to 65535 are **dynamic or ephemeral** (my OS picks one as the source port for outgoing connections).
+
+#### The ports from my syllabus
+
+| Port | Protocol | Service | Notes and security angle |
+|---|---|---|---|
+| 21 | TCP | FTP (control) | Clear-text login. Check for anonymous login; use SFTP instead. |
+| 22 | TCP | SSH | Encrypted remote shell. Target of brute-force attacks; use keys. |
+| 23 | TCP | Telnet | Clear-text remote shell. Obsolete and dangerous. |
+| 25 | TCP | SMTP | Sending and relaying email. Check for open relay and user enumeration (`VRFY`). Mail clients usually submit on 587 or 465. |
+| 53 | UDP/TCP | DNS | UDP for queries, TCP for zone transfers. |
+| 80 | TCP | HTTP | Unencrypted web. Web app attacks (SQLi, XSS). |
+| 110 | TCP | POP3 | Clear-text mail retrieval (995 = POP3S). |
+| 139 | TCP | NetBIOS Session | Old Windows file sharing (SMB over NetBIOS). |
+| 443 | TCP | HTTPS | Web over TLS. |
+| 445 | TCP | SMB | Windows file sharing. EternalBlue and WannaCry exploited it. |
+| 3306 | TCP | MySQL | Database. Should never be exposed to the Internet. |
+| 3389 | TCP | RDP | Windows Remote Desktop. Target of brute-force attacks and BlueKeep. |
+
+#### Other ports worth knowing
+
+| Port | Service | Port | Service |
+|---|---|---|---|
+| 20 | FTP data | 67 / 68 | DHCP (UDP) |
+| 69 | TFTP (UDP) | 88 | Kerberos |
+| 123 | NTP (UDP) | 143 | IMAP |
+| 161 | SNMP (UDP) | 389 / 636 | LDAP / LDAPS |
+| 1433 | MS SQL Server | 5432 | PostgreSQL |
+| 5900 | VNC | 8080 | Alternate HTTP and proxies |
+
+#### Port states (as Nmap reports them)
+
+| State | Meaning |
+|---|---|
+| `open` | A service is actively accepting connections |
+| `closed` | Reachable, but no service is listening (RST received) |
+| `filtered` | A firewall or filter blocks the probe, so Nmap can't tell |
+| `open\|filtered` | No response; could be open or filtered (common with UDP) |
+| `unfiltered` | Reachable, but Nmap can't tell if it is open or closed (ACK scan) |
+
+#### Practical 13: See ports on my own computer
+
+```
+netstat -ano | findstr LISTENING     # Windows
+ss -tulpn                            # Linux
+sudo lsof -i -P -n | grep LISTEN     # Linux and Mac
+```
+
+Start a quick web server and find it:
+
+```
+python3 -m http.server 8000
+```
+
+In another terminal:
+
+```
+ss -tlpn | grep 8000
+curl http://127.0.0.1:8000
+```
+
+Look up well-known ports in the services file. On Windows it is `C:\Windows\System32\drivers\etc\services`. On Linux it is `/etc/services`:
+
+```
+grep -w 443 /etc/services
+```
+
+
+## 5. Commands I practiced
+
+| Command | What it does | Example I ran |
+|---|---|---|
+| `ip a` (Windows: `ipconfig /all`) | Shows my IP addresses, MAC address and interfaces | `ip a` |
+| `ip route` | Shows the routing table and my default gateway | `ip route` |
+| `ping` | Tests connectivity to a host using ICMP | `ping -c 4 8.8.8.8` (Windows: `ping -n 4 8.8.8.8`) |
+| `arp -a` (Linux also: `ip neigh`) | Shows the ARP table, which maps IPs to MACs on my LAN | `arp -a` |
+| `nslookup` | Looks up DNS records (basic) | `nslookup example.com` |
+| `dig` | Looks up DNS records in detail | `dig example.com A +short` |
+| `traceroute` (Windows: `tracert`) | Shows the path packets take to a host, hop by hop | `traceroute example.com` |
+| `ss -tuln` (Windows: `netstat -ano`) | Shows open listening TCP and UDP ports | `ss -tuln` |
+| `curl` | Fetches a web page or just its headers | `curl -I http://example.com` |
+| `curl ifconfig.me` | Shows my public IP, which differs from my private IP because of NAT | `curl ifconfig.me` |
+| `nc` (netcat) | Tests whether a port is open, or opens a TCP or UDP connection | `nc -vz scanme.nmap.org 80` |
+| `nmap -sn` | Ping sweep that finds live hosts on my own network | `sudo nmap -sn 192.168.1.0/24` |
+| `ipconfig /release` and `/renew` | Windows: gives up my DHCP lease and requests a new one | `ipconfig /renew` |
+
+
+## 6. Packet analysis with Wireshark
+
+Wireshark is a packet analyser. It captures traffic on a network interface and shows every layer of every packet. It is essential for troubleshooting, malware analysis, incident response and learning how protocols really behave. I only capture traffic on my own lab network or on networks I have permission to monitor.
+
+### 6.1 Setting up
+
+- **Install:** on Windows, download from wireshark.org (include Npcap). Kali already has it. On Ubuntu, run `sudo apt install wireshark`.
+- **Capturing without root on Linux:** add my user to the `wireshark` group with `sudo usermod -aG wireshark $USER`, then log out and back in.
+- **Start a capture:** open Wireshark, pick the active interface (the one with a moving graph), and click the blue shark fin.
+- **Stop and save:** click the red square, then save the capture as `.pcapng`.
+
+### 6.2 The three panes
+
+| Pane | Shows |
+|---|---|
+| Packet List (top) | One line per packet: No., Time, Source, Destination, Protocol, Length, Info |
+| Packet Details (middle) | Expandable tree of layers: Frame, Ethernet, IP, TCP or UDP, then the application |
+| Packet Bytes (bottom) | Raw hex and ASCII of the selected packet |
+
+### 6.3 Capture filters vs display filters
+
+| | Capture filter | Display filter |
+|---|---|---|
+| When applied | Before capture (limits what is recorded) | After capture (hides rows) |
+| Syntax | BPF: `host 192.168.1.1`, `port 80` | Wireshark: `ip.addr == 192.168.1.1` |
+| Can be changed live? | No | Yes, at any time |
+
+### 6.4 Essential display filters
+
+| Goal | Filter |
+|---|---|
+| Traffic to or from one host | `ip.addr == 192.168.1.10` |
+| Source only, destination only | `ip.src == 192.168.1.10`, `ip.dst == 8.8.8.8` |
+| A protocol | `dns`, `http`, `arp`, `icmp`, `tcp`, `udp`, `tls` |
+| A port | `tcp.port == 443`, `udp.port == 53` |
+| Only SYN packets (start of connections) | `tcp.flags.syn == 1 && tcp.flags.ack == 0` |
+| Resets | `tcp.flags.reset == 1` |
+| HTTP GET and POST | `http.request.method == "GET"`, `http.request.method == "POST"` |
+| Text anywhere in a packet | `frame contains "password"` |
+| DNS for a name | `dns.qry.name contains "example"` |
+| ICMP echo only | `icmp.type == 8 \|\| icmp.type == 0` |
+| Combine or negate | `&&`, `\|\|`, `!(arp)`; for example `ip.addr == 10.0.0.5 && !dns` |
+| TCP problems | `tcp.analysis.retransmission`, `tcp.analysis.flags` |
+| MAC address | `eth.addr == aa:bb:cc:dd:ee:ff` |
+
+A green filter bar means the syntax is valid, and red means a mistake. (In the table, the `\|\|` is how I write `||` so the table doesn't break. In Wireshark I type `||`.)
+
+### 6.5 Practical exercises
+
+#### Practical 14: Capture a ping (ICMP)
+
+1. Start capturing and apply the filter `icmp`.
+2. In a terminal run `ping -c 4 8.8.8.8`.
+3. I should see 4 Echo requests and 4 replies. Expand a packet to see Ethernet, IPv4 (note the TTL) and ICMP type 8 or 0.
+
+#### Practical 15: Capture a TCP three-way handshake
+
+1. Filter: `tcp.port == 80`. In a terminal run `curl http://example.com`.
+2. Find the first three packets: `[SYN]`, `[SYN, ACK]`, `[ACK]`.
+3. Click the SYN packet, expand TCP, and look at the flags and the sequence number. Check that the ack of the SYN-ACK equals my seq + 1. Wireshark shows **relative** sequence numbers by default (starting at 0), so the numbers I see are small.
+4. Right-click any packet, then choose Follow, then TCP Stream, to read the HTTP request and response.
+
+#### Practical 16: Capture a DNS lookup
+
+1. Filter: `dns`. Run `nslookup example.com`.
+2. Find the query (type A) and the response. Check the Answers section and the TTL.
+
+#### Practical 17: Why clear-text protocols are dangerous
+
+Use only an intentionally vulnerable lab target (Metasploitable, DVWA) or my own test server.
+
+1. Filter: `http.request.method == "POST"` while logging in to the test site over HTTP.
+2. Open the packet and look at the HTML Form URL Encoded section. The username and password are visible in plain text.
+3. Repeat the login over HTTPS and note that I only see encrypted TLS Application Data.
+
+#### Practical 18: Spot an Nmap SYN scan in my capture
+
+1. Capture on my lab interface while running `sudo nmap -sS <lab target>` against my own lab machine.
+2. Use the filter `tcp.flags.syn == 1 && tcp.flags.ack == 0`. I will see hundreds of SYNs from one source to many different ports.
+3. Open Statistics, then Conversations, then the TCP tab, to see them all. Many conversations with tiny packets and RSTs signal a scan.
+
+### 6.6 Useful Wireshark features
+
+- **Statistics > Protocol Hierarchy:** the percentage of each protocol; unusual protocols stand out.
+- **Statistics > Conversations and Endpoints:** who talks to whom and how much.
+- **Analyze > Expert Information:** warnings such as retransmissions, resets and duplicate IPs.
+- **File > Export Objects > HTTP:** extract files transferred over HTTP. In malware analysis, always do this in an isolated VM.
+- **Colouring rules (default theme):** black rows with red text mean TCP problems, light blue is UDP and DNS, light green is HTTP, and pale yellow is ARP.
+- **tshark** is the command-line version: `tshark -i eth0 -f "port 53" -c 20` and `tshark -r file.pcapng -Y "http"`.
+- **Decrypting HTTPS** is only possible with the session keys (the `SSLKEYLOGFILE` setting), because the traffic is encrypted.
+
+
+## 7. Port scanning with Nmap
+
+Nmap (Network Mapper) is the standard tool for discovering hosts, open ports, running services, operating systems and known weaknesses. It is the first tool most ethical hackers run during reconnaissance. I only scan my own lab machines, or targets I have written permission to test. `scanme.nmap.org` is Nmap's official test host, and I send it only a few requests.
+
+### 7.1 Basic syntax
+
+```
+nmap [scan type] [options] <target>
+```
+
+Ways to give a target:
+
+```
+nmap 192.168.1.10                              # single IP
+nmap scanme.nmap.org                           # hostname
+nmap 192.168.1.0/24                            # whole subnet
+nmap 192.168.1.1-50                            # range
+nmap -iL targets.txt                           # targets from a file
+nmap 192.168.1.0/24 --exclude 192.168.1.1      # skip one address
+```
+
+### 7.2 Host discovery
+
+```
+nmap -sn 192.168.1.0/24      # ping sweep only, no port scan (list live hosts)
+nmap -Pn 192.168.1.10        # skip discovery, assume the host is up (when ICMP is blocked)
+nmap -PR 192.168.1.0/24      # ARP discovery (default and most reliable on a LAN)
+nmap -sL 192.168.1.0/29      # just list targets, send nothing
+```
+
+### 7.3 Specifying ports
+
+```
+nmap 192.168.1.10                 # default: top 1000 TCP ports
+nmap -p 22,80,443 192.168.1.10    # specific ports
+nmap -p 1-1024 192.168.1.10       # range
+nmap -p- 192.168.1.10             # all 65535 ports
+nmap -F 192.168.1.10              # fast: top 100 ports
+nmap --top-ports 20 192.168.1.10
+sudo nmap -sU -sS -p U:53,161,T:21-25,80 192.168.1.10   # mixed UDP and TCP
+```
+
+For a mixed UDP and TCP list, I need to ask for both scan types (`-sU` and `-sS`).
+
+### 7.4 Scan types
+
+#### SYN scan: `-sS` (the default as root, also called "stealth" or "half-open")
+
+Nmap sends a SYN. If it gets SYN+ACK, the port is open, and Nmap then sends RST instead of ACK, so the handshake is never completed. It is fast and is less likely to be logged by the application.
+
+```
+Open port:      Nmap --SYN-->  Target
+                Nmap <-SYN/ACK- Target
+                Nmap --RST-->  Target     (connection never completes)
+
+Closed port:    Nmap --SYN-->  Target
+                Nmap <---RST--- Target
+
+Filtered port:  Nmap --SYN-->  (no reply, or ICMP unreachable)
+```
+
+```
+sudo nmap -sS 192.168.1.10
+```
+
+#### TCP connect scan: `-sT` (the default without root)
+
+It uses the operating system's full `connect()` call and completes the three-way handshake, so it is slower and gets logged more easily.
+
+```
+nmap -sT 192.168.1.10
+```
+
+#### UDP scan: `-sU`
+
+It is slow, because UDP services often don't reply. No reply gives `open|filtered`, and an ICMP port-unreachable gives `closed`. Always limit the port range.
+
+```
+sudo nmap -sU --top-ports 20 192.168.1.10
+sudo nmap -sU -p 53,67,69,123,161 192.168.1.10
+```
+
+#### Other scan types (know they exist)
+
+| Option | Name | Idea |
+|---|---|---|
+| `-sA` | ACK scan | Maps firewall rules: reports filtered or unfiltered |
+| `-sF`, `-sN`, `-sX` | FIN, Null, Xmas | Odd flag combinations. Closed ports reply RST and open ports stay silent (works on RFC-compliant systems, not Windows). |
+| `-sW` | Window scan | Like ACK, but inspects the TCP window size |
+| `-sI` | Idle (zombie) scan | Scans via a third host, hiding my IP |
+| `-sn` | Ping scan | Host discovery only |
+
+### 7.5 Service and version detection: `-sV`
+
+Open port numbers only **suggest** a service. `-sV` connects to each open port, reads the banner and sends probes to identify the real software and version. Versions let me search for known vulnerabilities (CVEs).
+
+```
+sudo nmap -sV 192.168.1.10
+sudo nmap -sV --version-intensity 9 192.168.1.10   # try harder (0 to 9)
+sudo nmap -sV --version-light 192.168.1.10         # faster, less accurate
+```
+
+Example output (Metasploitable 2, trimmed):
+
+```
+PORT     STATE SERVICE     VERSION
+21/tcp   open  ftp         vsftpd 2.3.4
+22/tcp   open  ssh         OpenSSH 4.7p1 Debian 8ubuntu1 (protocol 2.0)
+23/tcp   open  telnet      Linux telnetd
+25/tcp   open  smtp        Postfix smtpd
+80/tcp   open  http        Apache httpd 2.2.8 ((Ubuntu) DAV/2)
+139/tcp  open  netbios-ssn Samba smbd 3.X - 4.X
+445/tcp  open  netbios-ssn Samba smbd 3.X - 4.X
+3306/tcp open  mysql       MySQL 5.0.51a-3ubuntu5
+```
+
+How to read it: `vsftpd 2.3.4` is a famous backdoored release, and Apache 2.2.8 and OpenSSH 4.7 are very old. These are leads for the next phase, such as running `searchsploit vsftpd 2.3.4` or checking the CVE databases.
+
+### 7.6 OS detection: `-O`
+
+Nmap sends specially crafted probes and compares how the TCP/IP stack responds (TTL, window size, options, flags) with a fingerprint database. It needs root and at least one open and one closed port to be accurate.
+
+```
+sudo nmap -O 192.168.1.10
+sudo nmap -O --osscan-guess 192.168.1.10   # show best guesses
+sudo nmap -A 192.168.1.10                  # aggressive: -sV -O -sC --traceroute
+```
+
+Sample output:
+
+```
+Device type: general purpose
+Running: Linux 2.6.X
+OS CPE: cpe:/o:linux:linux_kernel:2.6
+OS details: Linux 2.6.9 - 2.6.33
+Network Distance: 1 hop
+```
+
+Results are estimates, and firewalls, VMs and NAT can distort them.
+
+### 7.7 Nmap Scripting Engine (NSE): `--script`
+
+NSE runs Lua scripts for discovery, brute force, vulnerability checks and more. Scripts live in `/usr/share/nmap/scripts/`. They are grouped into categories: `default`, `safe`, `discovery`, `version`, `vuln`, `auth`, `brute`, `exploit`, `intrusive`, `malware`. Categories like `brute`, `exploit` and `intrusive` can disrupt or damage a target, so I only run them on my own lab machines.
+
+```
+nmap -sC 192.168.1.10                              # run default scripts (same as --script=default)
+nmap --script=vuln 192.168.1.10                    # known-vulnerability checks
+nmap --script=http-title,http-headers -p 80 192.168.1.10
+nmap --script=ftp-anon -p 21 192.168.1.10          # is anonymous FTP allowed?
+nmap --script=smb-os-discovery -p 445 192.168.1.10
+nmap --script=ssh-auth-methods -p 22 192.168.1.10
+nmap --script=dns-zone-transfer -p 53 --script-args dns-zone-transfer.domain=example.com ns1.example.com
+nmap --script "http-*" -p 80 192.168.1.10          # wildcard
+nmap --script-help ftp-anon                        # read the documentation
+ls /usr/share/nmap/scripts | grep smb              # find scripts
+sudo nmap --script-updatedb                        # refresh the script index
+```
+
+Example output:
+
+```
+PORT   STATE SERVICE
+21/tcp open  ftp
+| ftp-anon: Anonymous FTP login allowed (FTP code 230)
+|_drwxr-xr-x   2 ftp   ftp   4096 Mar 01  2024 pub
+```
+
+### 7.8 Output formats: `-oN`, `-oX`, `-oG`, `-oA`
+
+| Option | Format | Best for |
+|---|---|---|
+| `-oN file.txt` | Normal text | Reading and reports |
+| `-oX file.xml` | XML | Importing into tools (Metasploit, Zenmap, parsers) |
+| `-oG file.gnmap` | Grepable | Quick filtering with grep or awk (deprecated but handy) |
+| `-oA basename` | All three at once | Best habit: creates `.nmap`, `.xml` and `.gnmap` |
+| `-oS file` | Script kiddie | Just for fun |
+
+Create the output folder first, then scan and filter the results:
+
+```
+mkdir scans
+sudo nmap -sV -oA scans/metasploitable 192.168.56.101
+grep "open" scans/metasploitable.gnmap
+
+# list only hosts with port 22 open
+grep "22/open" scans/metasploitable.gnmap | cut -d' ' -f2
+
+# convert XML to an HTML report (install first: sudo apt install xsltproc)
+xsltproc scans/metasploitable.xml -o scans/report.html
+```
+
+### 7.9 Timing, verbosity and evasion basics
+
+| Option | Purpose |
+|---|---|
+| `-T0` to `-T5` | Timing template: 0 paranoid (very slow), 3 normal (default), 4 aggressive, 5 insane. Use `-T4` in labs. |
+| `-v` / `-vv` | Verbose: show open ports as they are found |
+| `-d` | Debug output |
+| `--reason` | Explain why each port has its state |
+| `--open` | Show only open ports |
+| `--packet-trace` | Show every packet sent and received |
+| `-D RND:5` | Decoy scan, mixes my IP among fake sources |
+| `-f` | Fragment packets (older firewalls) |
+| `--source-port 53` | Spoof the source port (may bypass poorly written rules) |
+| `--min-rate 1000` | Send at least 1000 packets per second |
+
+Evasion options are for understanding how firewalls and IDS behave in my own lab. I don't use them against systems I don't have permission to test.
+
+### 7.10 Practical lab: scan my own network step by step
+
+**Setup:** In VirtualBox, run Kali and Metasploitable 2 on a Host-Only or Internal network (for example `192.168.56.0/24`) so they are isolated from the Internet. Find Metasploitable's IP by logging in (the default credentials for that lab VM are `msfadmin` / `msfadmin`) and running `ifconfig`.
+
+1. **Discover live hosts:** `sudo nmap -sn 192.168.56.0/24`, then note the target IP (say `192.168.56.101`).
+2. **Quick scan:** `sudo nmap -F 192.168.56.101`
+3. **All ports and service versions:** `sudo nmap -p- -sV -T4 -oA scans/meta 192.168.56.101`
+4. **OS guess:** `sudo nmap -O 192.168.56.101`
+5. **Default scripts and a vulnerability check:** `sudo nmap -sC --script=vuln -p 21,22,80,445 192.168.56.101`
+6. **UDP top ports:** `sudo nmap -sU --top-ports 20 192.168.56.101`
+7. **Compare scan types:** run `sudo nmap -sT` and `sudo nmap -sS` with Wireshark open. In the SYN scan, I will see RST replacing the final ACK.
+8. **Document:** open `scans/meta.nmap`, then write one line per open port: service, version, risk and recommended fix.
+
+### 7.11 Mini report template
+
+| Port | Service / Version | Risk | Recommendation |
+|---|---|---|---|
+| 21/tcp | vsftpd 2.3.4 | Backdoored version; anonymous login possible | Upgrade or replace; disable anonymous access; use SFTP |
+| 23/tcp | Linux telnetd | Clear-text credentials | Disable Telnet; use SSH |
+| 445/tcp | Samba 3.x | Old SMB, multiple known CVEs | Patch; restrict by firewall |
+| 3306/tcp | MySQL 5.0.51a | Database exposed on the network | Bind to localhost; use a firewall |
+
+### 7.12 Nmap cheat sheet
+
+| Task | Command |
+|---|---|
+| Live hosts on LAN | `sudo nmap -sn 192.168.1.0/24` |
+| Quick top ports | `nmap -F <ip>` |
+| Full TCP port scan | `sudo nmap -p- -T4 <ip>` |
+| Stealth SYN scan | `sudo nmap -sS <ip>` |
+| Versions | `sudo nmap -sV <ip>` |
+| OS detection | `sudo nmap -O <ip>` |
+| Aggressive all-in-one | `sudo nmap -A -T4 <ip>` |
+| Default scripts | `nmap -sC <ip>` |
+| Vulnerability scripts | `nmap --script vuln <ip>` |
+| UDP scan | `sudo nmap -sU --top-ports 20 <ip>` |
+| No ping (firewalled host) | `nmap -Pn <ip>` |
+| Save everything | `nmap -oA name <ip>` |
+| Typical first scan in practice | `sudo nmap -sC -sV -T4 -oA first <ip>` |
+
+
+
+## Mistakes

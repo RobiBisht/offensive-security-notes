@@ -1,6 +1,8 @@
+"Solutions for the 24 exercises in Practice Exercises. Try each one on my own before reading the answer.”
+
 # Linux Fundamentals – Practical Questions and Solutions
 
-> Solutions for the 24 practical exercises based on **linux-notes**.  
+> Solutions for the 24 practical exercises based on the Linux notes.  
 > Practice in Kali Linux or Ubuntu. Use your `~/practice` directory for file exercises.  
 > Commands that modify users, services, packages, or system configuration may require `sudo`.
 
@@ -239,6 +241,8 @@ systemctl status ssh
 ```
 
 The final status command verifies whether SSH is running.
+
+**Note:** `systemctl status` can open its output in a pager. If the terminal seems stuck, with something like `lines 1-15/15 (END)` at the bottom, it hasn't frozen. Press `q` to exit. To skip the pager, use `systemctl status ssh --no-pager`. Look for `active (running)` in the output.
 
 ---
 
