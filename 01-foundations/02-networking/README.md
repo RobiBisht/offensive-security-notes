@@ -24,4 +24,4 @@ My notes on networking for security. Practiced in my Kali and Ubuntu VMs. For ed
 ## Related
 
 - [Linux notes](../01-linux/README.md)
-- [OverTheWire Bandit notes](../05-bandit-progress.md)
+- [OverTheWire Bandit notes](../04-bandit-progress.md)
