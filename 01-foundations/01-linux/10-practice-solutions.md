@@ -2,7 +2,7 @@
 
 # Linux Fundamentals – Practical Questions and Solutions
 
-> Solutions for the 24 practical exercises based on the Linux notes.  
+> Solutions for the 24 practical exercises based on the linux notes.  
 > Practice in Kali Linux or Ubuntu. Use your `~/practice` directory for file exercises.  
 > Commands that modify users, services, packages, or system configuration may require `sudo`.
 

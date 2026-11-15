@@ -29,4 +29,4 @@ My notes from learning Linux for ethical hacking, practiced in my own Kali and U
 
 ## Related
 
-- [OverTheWire Bandit notes](../bandit-progress.md): practicing these skills in a wargame
+- [OverTheWire Bandit notes](../04-bandit-progress.md): practicing these skills in a wargame
