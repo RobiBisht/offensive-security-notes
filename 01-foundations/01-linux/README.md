@@ -17,7 +17,7 @@ My notes from learning Linux for ethical hacking, practiced in my own Kali and U
 
 ## Progress
 
-- [ ] Basics and files
+- [✅] Basics and files
 - [ ] Searching and text processing
 - [ ] Users and permissions
 - [ ] SSH and networking
