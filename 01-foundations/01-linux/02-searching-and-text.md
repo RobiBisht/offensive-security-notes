@@ -21,6 +21,7 @@ grep -n "bash" /etc/passwd             # show line numbers
 grep -v "nologin" /etc/passwd          # show lines that do NOT match
 ```
 
+- Linux has three standard data streams:0 - Standard input, 1 - Standard output (normal results), 2 - Standard error (error messages)
 - `2>/dev/null` hides permission errors so the output stays readable.
 - `find / -perm -4000 2>/dev/null` finds SUID files, which are important for privilege escalation. (Research permission bits to know more about this.)
 
