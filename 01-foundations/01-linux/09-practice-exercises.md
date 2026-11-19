@@ -1,10 +1,10 @@
-“Solutions: practice solutions”
-
 # Linux Notes: Practice Exercises
 
 [Back to Linux index](README.md)
 
-Try completing each question myself without looking at the commands in my notes. Each exercise matches a topic in the other files.
+Solutions: [Practice solutions](10-practice-solutions.md)
+
+Try completing each question myself without looking at the commands in my notes. Each exercise matches a topic in the other files. Exercises 7 (SSH between two machines), 10 (cron), 13 (logs), 22 (boot process) and 23 (disks) behave differently in WSL, so check the notes in those files first.
 
 1. **Getting help and flags:** Use `man` and `--help` to find three useful flags for `ls`, `cp` and `grep`. Explain what each flag does.
 2. **Navigating and managing files:** Inside `~/practice`, create `projects/web`, `projects/network` and `notes`. Create three text files, copy one, rename one and delete one.

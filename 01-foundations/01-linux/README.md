@@ -1,6 +1,6 @@
 # Linux Notes
 
-My notes from learning Linux for ethical hacking, practiced in my own Kali and Ubuntu VMs. For educational use only.
+My notes from learning Linux for ethical hacking, practiced on Kali Linux in WSL2. The SSH examples use `localhost`, because a real two-machine SSH lab needs two VMs. For educational use only.
 
 ## Contents
 
@@ -13,20 +13,22 @@ My notes from learning Linux for ethical hacking, practiced in my own Kali and U
 7. [Shell and scripting](07-shell-and-scripting.md): shell basics, PATH, scripts, nano and Vim, archives
 8. [System, boot, disks and file systems](08-system-and-disks.md): system info, boot process, disks, filesystems
 9. [Practice exercises](09-practice-exercises.md): 24 exercises, one for each topic
-10. [Practice solutions](10-practice-solutions.md)
+10. [Practice solutions](10-practice-solutions.md): answers to the 24 exercises
 
 ## Progress
 
-- [✅] Basics and files
-- [✅] Searching and text processing
-- [✅] Users and permissions
-- [ ] SSH and networking
-- [ ] Processes, services and cron
-- [ ] Packages and logs
-- [ ] Shell and scripting
-- [ ] System, boot, disks and file systems
-- [ ] Practice exercises
+- [✓] Basics and files
+- [✓] Searching and text processing
+- [✓] Users and permissions
+- [✓] SSH and networking
+- [✓] Processes, services and cron
+- [✓] Packages and logs
+- [✓] Shell and scripting
+- [✓] System, boot, disks and file systems
+- [✓] Practice exercises
 
 ## Related
 
-- [OverTheWire Bandit notes](../04-bandit-progress.md): practicing these skills in a wargame
+- [Networking notes](../02-networking/README.md)
+- [Windows basics](../03-windows-basics.md)
+- [OverTheWire Bandit notes](../05-bandit-progress.md): practicing these skills in a wargame

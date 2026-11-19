@@ -47,7 +47,7 @@ ls -l perm-demo.txt
 ls -ld ~/practice
 ```
 
-![Reading the permissions of a file and a directory](images/linux-permission-breakdown.png)
+![Reading the permissions of a file and a directory](images/03-linux-permission-breakdown.png)
 
 - The file shows `-rwxr-xr--`, which matches `754`: the owner can read, write and execute, the group can read and execute, and others can only read.
 - The first character of the directory line is `d`, so `~/practice` is a directory.
@@ -91,9 +91,9 @@ chmod u+x,g-w script.sh
 ls -l script.sh
 ```
 
-![chmod with numbers and symbols, checked with ls -l](images/linux-chmod-numeric-symbolic.png)
+![chmod with numbers and symbols, checked with ls -l](images/03-linux-chmod-numeric-symbolic.png)
 
-- A new file starts as `-rw-r--r--` (`644`), because of the default umask.
+- This `script.sh` already existed from earlier practice (`touch` only updates the date of an existing file), so it started as `-rwxr--r--`. A brand-new file normally starts as `-rw-r--r--` (`644`), because of the default umask.
 - `chmod 755` changed it to `-rwxr-xr-x`, and `chmod 644` changed it back.
 - `g+w` added write for the group, giving `-rw-rw-r--`.
 - `u+x,g-w` added execute for the owner and removed write for the group in one command, giving `-rwxr--r--`.
@@ -111,7 +111,7 @@ cat private.txt
 ls -l private.txt
 ```
 
-![Reading a file with no permissions, then with 600](images/linux-permission-denied-read.png)
+![Reading a file with no permissions, then with 600](images/03-linux-permission-denied-read.png)
 
 - With `chmod 000`, `cat private.txt` printed `Permission denied`, even though I own the file. The owner's permissions apply to the owner, so removing them blocks me too. The owner can always change them back with `chmod`.
 - After `chmod 600` (`rw-` for the owner and nothing for anyone else), `cat` worked again, and `ls -l` showed `-rw-------`.
@@ -128,7 +128,7 @@ chmod +x run-me.sh
 ./run-me.sh
 ```
 
-![A script before and after adding execute permission](images/linux-execute-permission.png)
+![A script before and after adding execute permission](images/03-linux-execute-permission.png)
 
 - The new file was `-rw-r--r--`, with no `x`, so `./run-me.sh` printed a "permission denied" message. The wording depends on the shell (bash and zsh differ).
 - After `chmod +x`, the same command printed `script ran`.
@@ -156,7 +156,7 @@ echo "hi" >> owned.txt
 cat owned.txt
 ```
 
-![Changing a file's owner with chown](images/linux-chown.png)
+![Changing a file's owner with chown](images/03-linux-chown.png)
 
 - The file started with my username as the owner.
 - After `sudo chown root owned.txt`, the owner column showed `root`. The group was still my group, and the group only has read permission (`r--`), so writing with `>>` failed with "permission denied".
@@ -192,11 +192,11 @@ id testuser
 sudo deluser --remove-home testuser
 ```
 
-![Checking my identity and groups, and creating a test user](images/linux-users-groups.png)
+![Checking my identity and groups, and creating a test user](images/03-linux-users-groups.png)
 
 - `whoami` printed my username, and `id` and `groups` listed my user ID and groups. My groups include `sudo`, which is why I can run `sudo`.
-- After `adduser`, `id testuser` showed the new user in only its own group.
-- After `usermod -aG sudo testuser`, `id testuser` listed `sudo` as well.
+- After `adduser`, `id testuser` showed the new user (user ID 1001) in its own group and in the `users` group, but not in `sudo`.
+- After `usermod -aG sudo testuser`, `id testuser` listed `27(sudo)` as well, and the other groups were kept because of the `-a`.
 - The last command deleted the test user and its home directory, so nothing stays on my system.
 
 ## Special permissions (very important for privilege escalation)
@@ -232,8 +232,9 @@ ls -l /usr/bin/passwd
 ls -ld /tmp
 ```
 
-![SUID and SGID on a test file, compared with passwd and /tmp](images/linux-special-permissions.png)
+![SUID and SGID on a test file, compared with passwd and /tmp](images/03-linux-special-permissions.png)
 
+- `ls` colors SUID files with a red background, which is why `suid-demo.sh` and `/usr/bin/passwd` are highlighted.
 - After `u+s` on a file with no execute permission, the owner slot showed a capital `S` (`-rwSr--r--`). The capital `S` means the SUID bit is set, but the owner cannot execute the file, so it does nothing useful.
 - After `u+x`, it became a lowercase `s` (`-rwsr--r--`), which is a working SUID file.
 - `g+s` set SGID, and it showed as an `S` in the group slot, because the group doesn't have execute permission either.

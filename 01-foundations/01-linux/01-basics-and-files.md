@@ -48,7 +48,7 @@ ls --help  # quick help
 man ls     # full manual (press q to quit)
 ```
 
-![ls with different flags in my practice directory](images/linux-ls-flags.png)
+![ls with different flags in my practice directory](images/01-linux-ls-flags.png)
 
 - `ls -a` revealed `.hidden`, so plain `ls` really does hide files that start with a dot.
 - In `ls -l`, `-rw-r--r--` means a regular file where the owner can read and write, and the group and others can only read.
@@ -86,7 +86,7 @@ rmdir notes               # delete an empty directory
 ls -R                     # list a directory and everything inside it, recursively
 ```
 
-![mkdir -p, touch, cp and mv, then ls -R showing the nested directories](images/linux-file-management.png)
+![mkdir -p, touch, cp and mv, then ls -R showing the nested directories](images/01-linux-file-management.png)
 
 *Note: `file2.txt` in the output was already in this directory from an earlier exercise. It was not created by these commands.*
 
@@ -94,7 +94,7 @@ ls -R                     # list a directory and everything inside it, recursive
 - `mkdir -p` created all three levels with one command. Without `-p`, `mkdir a/b/c` would fail because `a` and `a/b` don't exist yet.
 - `cp file1.txt file2.txt` copies `file1.txt` to `file2.txt`. If `file2.txt` exists it is overwritten, and if it doesn't exist it is created and then filled with the copy.
 
-![mv renaming a file, then moving it into a directory](images/linux-mv-rename-vs-move.png)
+![mv renaming a file, then moving it into a directory](images/01-linux-mv-rename-vs-move.png)
 
 - `mv renamed.txt file.txt`: both names are in the same directory, so Linux renames `renamed.txt` to `file.txt`.
 - `mv file.txt a/`: Linux moves `file.txt` into the directory `a/`.
@@ -126,7 +126,7 @@ nano hello.txt                    # open a file in the Nano text editor (Ctrl+O 
 - `>` creates a file if it doesn't exist, and overwrites its contents if it does.
 - `>>` creates a file if it doesn't exist, and appends to it if it does.
 
-![Creating a file with >, appending with >>, then overwriting it with >](images/linux-redirect-overwrite-append.png)
+![Creating a file with >, appending with >>, then overwriting it with >](images/01-linux-redirect-overwrite-append.png)
 
 - The first `ls` shows that `hello.txt` didn't exist, so `>` created it.
 - `>>` kept `hello` and added `second line` at the end.
@@ -151,21 +151,21 @@ nano hello.txt                    # open a file in the Nano text editor (Ctrl+O 
 - `/bin` and `/usr/bin`: on modern Kali and Ubuntu systems, `/bin` is often a symbolic link to `/usr/bin`.
 - `/proc`: a virtual filesystem, not an ordinary directory of regular files.
 
-![ls -ld /bin showing that /bin is a symbolic link to usr/bin](images/linux-bin-symlink.png)
+![ls -ld /bin showing that /bin is a symbolic link to usr/bin](images/01-linux-bin-symlink.png)
 
 - `-d` lists the directory entry itself instead of its contents, so `ls -ld /bin` shows the link. A plain `ls /bin` follows the link and lists what is inside `/usr/bin`.
 - The `l` at the start and `rwxrwxrwx`: a symlink always shows full permissions, and they don't mean much. The permissions of the file it points to are what count.
 - The size `7` is the length of the text `usr/bin`, which is 7 characters. It is the size of the link itself, not of the directory it points to.
 - The target is relative. `usr/bin` has no leading slash, so it is read relative to `/`, which makes it `/usr/bin`.
 
-![ls -l /etc/passwd /etc/shadow showing file permissions, ownership, and access restrictions](images/linux-passwd-vs-shadow-permissions.png)
+![ls -l /etc/passwd /etc/shadow showing file permissions, ownership, and access restrictions](images/01-linux-passwd-vs-shadow-permissions.png)
 
 - `ls -l /etc/passwd /etc/shadow` displays detailed information about both files, including their permissions, owner, group, size, and modification date.
 - `/etc/passwd` is generally readable by all users, while `/etc/shadow` has restricted permissions because it contains sensitive password hashes.
 - The permission string at the beginning shows who can read, write, or execute each file.
 - `root` is the owner of both files. The group ownership of `/etc/shadow` may be `shadow`.
 
-![cat /etc/os-release showing Kali Linux distribution and version information](images/linux-os-release.png)
+![cat /etc/os-release showing Kali Linux distribution and version information](images/01-linux-os-release.png)
 
 - `cat /etc/os-release` displays information about the installed Linux distribution and its version.
 - `PRETTY_NAME` shows the human-readable distribution name (`Kali GNU/Linux Rolling`).

@@ -47,7 +47,7 @@ find /root ~/practice -name "*.txt"
 find /root ~/practice -name "*.txt" 2>/dev/null
 ```
 
-![find without and with 2>/dev/null](images/linux-find-permission-denied.png)
+![find without and with 2>/dev/null](images/02-linux-find-permission-denied.png)
 
 - Without `2>/dev/null`, the first line is `find: '/root': Permission denied`, followed by my `.txt` files. On a bigger search such as `find /`, this message repeats for every directory I can't read, and the real results get buried.
 - With `2>/dev/null`, the error messages go to `/dev/null` (a place that discards everything), and only the results remain.
@@ -61,7 +61,7 @@ find / -xdev -perm -4000 2>/dev/null
 ls -l /usr/bin/passwd /usr/bin/sudo
 ```
 
-![find listing .txt files and SUID files](images/linux-find-suid.png)
+![find listing .txt files and SUID files](images/02-linux-find-suid.png)
 
 - The first command lists every `.txt` file in my practice directory, including the ones I created above.
 - The second command lists files with the SUID bit set. The list included `passwd`, `sudo`, `su`, `mount`, `umount`, `chsh`, `chfn` and `gpasswd`, which need to run with their owner's rights (root) even when a normal user starts them.
@@ -78,7 +78,7 @@ grep -n "error" log.txt
 grep -v "info" log.txt
 ```
 
-![grep with the -i, -n and -v flags](images/linux-grep-flags.png)
+![grep with the -i, -n and -v flags](images/02-linux-grep-flags.png)
 
 - `grep "root" /etc/passwd` printed only the lines that contain `root`.
 - `-i` ignores case, so `grep -i "error" log.txt` matched both `error: disk full` and `Error: login failed`. Without `-i`, only the lowercase one matches.
@@ -115,7 +115,7 @@ sort names.txt | uniq -c | sort -nr
 cut -d ":" -f 1 /etc/passwd | sort | head -n 5
 ```
 
-![Pipes combining cut, sort, head and uniq](images/linux-pipes.png)
+![Pipes combining cut, sort, head and uniq](images/02-linux-pipes.png)
 
 - `uniq names.txt` printed all six lines unchanged, because `uniq` only removes duplicates that are **next to each other**. In my file, no identical lines are neighbours.
 - `sort names.txt | uniq` first puts identical lines together, so the result is `alice`, `bob`, `carol`. This is the same idea I used in OverTheWire Bandit.
@@ -151,7 +151,7 @@ ls /etc > out.txt
 head -n 3 out.txt
 ```
 
-![Redirecting stdout and stderr to separate files](images/linux-redirection-streams.png)
+![Redirecting stdout and stderr to separate files](images/02-linux-redirection-streams.png)
 
 - `ls /nonexistent` on its own printed the error on the screen.
 - `ls /nonexistent 2> errors.txt` printed nothing on the screen, because the error message went into `errors.txt`.
@@ -217,7 +217,7 @@ ls /nonexistent
 echo $?
 ```
 
-![Operators and exit status](images/linux-chaining-exit-status.png)
+![Operators and exit status](images/02-linux-chaining-exit-status.png)
 
 - The first `mkdir` succeeded, so `echo "created"` ran. The second `mkdir` failed with "File exists" because the directory was already there, so `echo` did not run.
 - `||` ran its `echo` only because `ls /nonexistent` failed.

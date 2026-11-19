@@ -2,6 +2,8 @@
 
 [Back to Linux index](README.md)
 
+I practiced these commands on Kali Linux in WSL2. WSL is not a normal machine: it has no BIOS or bootloader of its own, and its disks are virtual. Some commands below (`lspci`, `lsusb`, `timedatectl`, `hostnamectl`, `journalctl`, `systemd-analyze`) show little or fail with an error, depending on whether systemd is running. I note this where it matters.
+
 ## System information and identification
 
 System information commands help me identify the Linux distribution, kernel, hardware, memory, processor and system uptime. This is useful when troubleshooting, checking VM resources and understanding the machine I am working on.
@@ -14,7 +16,7 @@ uname -r             # kernel release/version
 uname -a             # all available kernel/system information
 cat /etc/os-release  # Linux distribution name and version
 hostname             # display the computer's hostname
-hostnamectl          # show hostname and system information
+hostnamectl          # show hostname and system information (needs systemd)
 ```
 
 `uname` reports kernel information, while `/etc/os-release` identifies the Linux distribution. They answer different questions.
@@ -33,8 +35,8 @@ cat /proc/meminfo  # detailed memory information
 ```bash
 lsblk     # list disks and partitions
 lsblk -f  # show filesystem types, labels, and mount points
-lspci     # list PCI devices, such as network and graphics adapters
-lsusb     # list USB devices
+lspci     # list PCI devices, such as network and graphics adapters (may need: sudo apt install pciutils)
+lsusb     # list USB devices (may need: sudo apt install usbutils)
 ```
 
 ### Uptime and logged-in users
@@ -44,22 +46,26 @@ uptime       # how long the system has been running and load averages
 who          # users currently logged in
 w            # logged-in users and what they are doing
 date         # current system date and time
-timedatectl  # time, date, and time-synchronization information
+timedatectl  # time, date, and time-synchronization information (needs systemd)
 ```
 
 ### A quick system-information check
 
 ```bash
-hostnamectl
+cat /etc/os-release | head -n 4
 uname -r
-lscpu
+lscpu | head -n 5
 free -h
-lsblk
-df -h
 uptime
 ```
 
-These commands only display information; they do not change system configuration.
+![Distribution, kernel, CPU, memory and uptime](images/08-linux-system-info.png)
+
+- `/etc/os-release` showed the distribution name and version (Kali), and `uname -r` showed the kernel release. In WSL the kernel name contains `microsoft` and `WSL2`, because it is a kernel supplied by Windows.
+- `lscpu` showed the CPU architecture, the number of CPUs and the model name.
+- `free -h` showed total, used and free RAM and swap in human-readable units.
+- `uptime` showed how long this WSL session has been running, and the load averages.
+- These commands only display information; they do not change system configuration.
 
 ## Linux boot process
 
@@ -74,10 +80,13 @@ The **boot process** is the sequence of steps Linux follows when a computer or v
 5. **Init system (usually systemd):** The init system starts and manages system services and brings the machine to its configured target.
 6. **Login:** A login screen or text login prompt becomes available.
 
+In WSL, Windows starts a lightweight virtual machine with its own kernel, so steps 1 and 2 don't happen the way they do on a real machine. Steps 3 to 6 still apply in a simplified form.
+
 ### Checking boot information
 
 ```bash
 uptime             # show how long the system has been running
+uptime -s          # show when the system started
 who -b             # show the last system boot time
 last reboot        # show recorded reboot history
 uname -r           # show the running kernel version
@@ -87,7 +96,7 @@ cat /proc/cmdline  # show parameters passed to the running kernel
 
 ### Understanding systemd startup
 
-On most modern Kali and Ubuntu installations, `systemd` is PID 1 and manages services and system startup.
+On most normal Kali and Ubuntu installations, `systemd` is PID 1 and manages services and system startup. In WSL it may be `init` instead.
 
 ```bash
 ps -p 1 -o pid,comm,args             # identify process 1
@@ -117,6 +126,24 @@ systemd-analyze blame  # services ordered by time spent during startup
 ```
 
 `journalctl -b` is especially useful when investigating startup or service problems. Some commands may show limited information depending on permissions and the system's log retention settings.
+
+I checked what is available in my WSL. The last two lines print a message instead of an error if systemd isn't running:
+
+```bash
+ps -p 1 -o pid,comm,args
+cat /proc/cmdline
+uname -r
+uptime -s
+systemctl get-default 2>/dev/null || echo "systemd is not running"
+systemd-analyze 2>/dev/null || echo "systemd-analyze is not available"
+```
+
+![Boot-related information in WSL](images/08-linux-boot-info.png)
+
+- `ps -p 1` identified the first process (PID 1), which starts everything else. In WSL it is `init` unless systemd is enabled.
+- `/proc/cmdline` showed the parameters that were passed to the kernel when it started.
+- `uptime -s` printed the time when this WSL instance started.
+- If systemd isn't running, the last two lines print a message. With systemd, they show the default target and the startup time summary.
 
 ## Disk management
 
@@ -155,6 +182,37 @@ du -h --max-depth=1 ~  # show space used by each immediate home subdirectory
 
 - `df` reports space available on filesystems.
 - `du` estimates the space used by files and directories.
+
+I looked at my disks, the root filesystem, and swap:
+
+```bash
+lsblk
+lsblk -f
+df -hT /
+swapon --show
+```
+
+![Disks, partitions, the root filesystem and swap](images/08-linux-disks-lsblk.png)
+
+- `lsblk` listed the virtual disks and their sizes. In WSL these are virtual disks provided by Windows, and the root filesystem sits on one of them.
+- `lsblk -f` added the filesystem type (normally `ext4` for the root) and the UUID.
+- `df -hT /` showed the type, size, used and available space of the filesystem that holds `/`, and where it is mounted.
+- `swapon --show` listed the active swap areas.
+
+Then I compared the usage of the whole filesystem with my own files:
+
+```bash
+df -h | head -n 6
+du -sh ~/practice
+du -h --max-depth=1 ~ | sort -h | tail -n 5
+```
+
+![Free space with df and directory sizes with du](images/08-linux-df-du.png)
+
+- `df -h` shows space per mounted filesystem. In WSL it also lists the Windows drives, mounted under `/mnt`.
+- `du -sh ~/practice` printed the total size of my practice directory.
+- `du -h --max-depth=1 ~ | sort -h | tail -n 5` listed the five largest items in my home directory. `sort -h` understands sizes like `4.0K` and `1.2G`.
+- `df` answers "how full is the disk", and `du` answers "what is using the space".
 
 ### Mount points and mounted filesystems
 
@@ -225,13 +283,13 @@ A **filesystem** is the method Linux uses to organize, store, name and retrieve 
 ### Identify a filesystem
 
 ```bash
-lsblk -f                # show filesystem type and mount point for each device
-sudo blkid              # show filesystem type, UUID, and labels
-df -T                   # show filesystem types for mounted filesystems
-sudo file -s /dev/sda1  # inspect filesystem/device signature (replace with a verified device)
+lsblk -f                                   # show filesystem type and mount point for each device
+sudo blkid                                 # show filesystem type, UUID, and labels
+df -T                                      # show filesystem types for mounted filesystems
+sudo file -s "$(findmnt -no SOURCE /)"     # inspect the device that holds the root filesystem
 ```
 
-Use the actual device name shown by `lsblk`; `/dev/sda1` above is only an example.
+`findmnt -no SOURCE /` prints the device that holds `/`, so I don't have to guess a name like `/dev/sda1`.
 
 ### Files, directories and inodes
 
@@ -244,6 +302,24 @@ df -i           # show inode usage on mounted filesystems
 ```
 
 A filesystem can run out of available inodes even when it still has free storage space. `df -i` helps check inode availability.
+
+Hard links and symbolic links show how inodes work:
+
+```bash
+echo "inode demo" > inode-demo.txt
+ln inode-demo.txt hardlink.txt
+ln -s inode-demo.txt softlink.txt
+ls -li inode-demo.txt hardlink.txt softlink.txt
+stat inode-demo.txt
+df -i /
+```
+
+![Inode numbers of a file, a hard link and a symbolic link](images/08-linux-inodes-links.png)
+
+- `ls -li` printed the inode number first on each line. `inode-demo.txt` and `hardlink.txt` have the **same** inode number, because a hard link is just another name for the same data. Their link count (the number after the permissions) is `2`.
+- `softlink.txt` has a **different** inode number and shows an arrow to its target. A symbolic link is a small separate file that holds a path.
+- `stat` listed the inode, size, permissions, owner and the access, modify and change times of the file.
+- `df -i /` showed how many inodes the root filesystem has, how many are used and how many are free.
 
 ### Linux directory structure and filesystems
 
@@ -284,7 +360,7 @@ Example format (illustrative only):
 UUID=xxxx-xxxx  /data  ext4  defaults  0  2
 ```
 
-Do not copy this placeholder entry into my system. Incorrect `/etc/fstab` entries can cause boot or mounting problems. Read the file first and make a backup before editing it.
+Do not copy this placeholder entry into my system. Incorrect `/etc/fstab` entries can cause boot or mounting problems. Read the file first and make a backup before editing it. In WSL, this file is usually short or nearly empty, because WSL mounts the root filesystem and the Windows drives itself.
 
 ### Filesystem checks
 
@@ -295,3 +371,9 @@ df -i    # check inode availability
 ```
 
 Filesystem repair tools can modify filesystem metadata. They should only be used with the correct device identified and according to the filesystem's documentation; do not run repair operations on a mounted filesystem unless the tool explicitly supports that operation.
+
+## Cleaning up
+
+```bash
+rm inode-demo.txt hardlink.txt softlink.txt
+```

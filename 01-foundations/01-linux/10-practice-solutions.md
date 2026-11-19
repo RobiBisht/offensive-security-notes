@@ -1,10 +1,12 @@
-"Solutions for the 24 exercises in Practice Exercises. Try each one on my own before reading the answer.”
+# Linux Notes: Practice Solutions
 
-# Linux Fundamentals – Practical Questions and Solutions
+[Back to Linux index](README.md)
 
-> Solutions for the 24 practical exercises based on the linux notes.  
-> Practice in Kali Linux or Ubuntu. Use your `~/practice` directory for file exercises.  
+Solutions for the 24 exercises in [Practice exercises](09-practice-exercises.md). Try each one on my own before reading the answer.
+
+> Practice in Kali Linux or Ubuntu. Use the `~/practice` directory for file exercises.
 > Commands that modify users, services, packages, or system configuration may require `sudo`.
+> I practiced on Kali in WSL2. SSH between two machines needs two VMs (use `localhost` on one machine), and `systemctl`, `journalctl` and `systemd-analyze` only work when systemd is running.
 
 ---
 
@@ -21,9 +23,9 @@ ls --help
 
 Useful `ls` flags:
 
-- `-l` — long listing format.
-- `-a` — include hidden files.
-- `-h` — display sizes in human-readable units (usually with `-l`).
+- `-l`: long listing format.
+- `-a`: include hidden files.
+- `-h`: display sizes in human-readable units (usually with `-l`).
 
 ```bash
 man cp
@@ -32,9 +34,9 @@ cp --help
 
 Useful `cp` flags:
 
-- `-r` — copy directories recursively.
-- `-i` — prompt before overwriting a destination.
-- `-v` — explain what is being copied.
+- `-r`: copy directories recursively.
+- `-i`: prompt before overwriting a destination.
+- `-v`: explain what is being copied.
 
 ```bash
 man grep
@@ -43,9 +45,9 @@ grep --help
 
 Useful `grep` flags:
 
-- `-i` — ignore case distinctions.
-- `-n` — show line numbers.
-- `-r` — search recursively through files in a directory.
+- `-i`: ignore case distinctions.
+- `-n`: show line numbers.
+- `-r`: search recursively through files in a directory.
 
 ---
 
@@ -150,12 +152,12 @@ cat /etc/os-release
 
 Typical purposes:
 
-- `/etc` — system configuration files.
-- `/var/log` — system and application logs.
-- `/tmp` — temporary files.
-- `/home` — normal users' home directories.
-- `/proc` — virtual filesystem containing live process and kernel information.
-- `/etc/os-release` — distribution name and version information.
+- `/etc`: system configuration files.
+- `/var/log`: system and application logs.
+- `/tmp`: temporary files.
+- `/home`: normal users' home directories.
+- `/proc`: virtual filesystem containing live process and kernel information.
+- `/etc/os-release`: distribution name and version information.
 
 ---
 
@@ -180,7 +182,7 @@ Note Ubuntu's IP address and your Ubuntu username.
 
 ### On Kali (the SSH client)
 
-Replace `ubuntuusername` and `192.168.56.101` with your actual username and Ubuntu IP:
+Replace `ubuntuusername` and `192.168.56.101` with your actual username and Ubuntu IP (on one machine, use `ssh localhost`):
 
 ```bash
 ssh ubuntuusername@192.168.56.101
@@ -240,7 +242,7 @@ sudo systemctl restart ssh
 systemctl status ssh
 ```
 
-The final status command verifies whether SSH is running.
+The final status command verifies whether SSH is running. Without systemd (for example in WSL), use `sudo service ssh status` and `sudo service ssh restart` instead.
 
 **Note:** `systemctl status` can open its output in a pager. If the terminal seems stuck, with something like `lines 1-15/15 (END)` at the bottom, it hasn't frozen. Press `q` to exit. To skip the pager, use `systemctl status ssh --no-pager`. Look for `active (running)` in the output.
 
@@ -264,7 +266,7 @@ Add this line:
 */5 * * * * date >> /tmp/time.log
 ```
 
-Save and exit the editor. Verify:
+In WSL, cron may need installing and starting first: `sudo apt install cron -y` and `sudo service cron start`. Save and exit the editor. Verify:
 
 ```bash
 crontab -l
@@ -350,7 +352,7 @@ sudo tail -f /var/log/auth.log
 
 Press `Ctrl+C` to stop following the log.
 
-If `auth.log` does not exist, use the system journal:
+If `auth.log` does not exist, use the system journal (this needs systemd):
 
 ```bash
 sudo journalctl -u ssh -n 20
@@ -479,7 +481,7 @@ The recovered files should be under `extracted/archive-folder/`.
 
 ## 19. Shell Scripting Basics
 
-**Question:** Write an executable Bash script that accepts a username, prints a greeting, counts 1–5, and checks `/etc/passwd`.
+**Question:** Write an executable Bash script that accepts a username, prints a greeting, counts 1 to 5, and checks `/etc/passwd`.
 
 ### Solution
 
@@ -691,5 +693,3 @@ cat /etc/fstab
 - `/etc/fstab` describes filesystems and how they should be mounted, including mount points, filesystem types, and mount options.
 
 Do not copy example UUIDs or placeholder mount entries into `/etc/fstab`. Incorrect entries can cause boot or mounting problems.
-
----
