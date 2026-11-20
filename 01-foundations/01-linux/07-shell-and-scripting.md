@@ -166,8 +166,7 @@ alias ll='ls -lah'
 type ll
 ```
 
-![Environment variables, PATH and export](images/07-linux-env-path1.png)
-![Environment variables, PATH and export](images/07-linux-env-path2.png)
+![Environment variables, PATH and export](images/07-linux-env-path.png)
 
 - `echo $PATH | tr ':' '\n'` put each folder of the PATH on its own line. The shell searches these folders, in this order, when I type a command name.
 - A variable I `export` is passed to child processes. The new `bash -c` process printed `test` for `MYVAR`, but the plain variable `LOCALVAR` came out empty (`[]`).
@@ -265,6 +264,9 @@ Vim has **modes**, and this is what confuses beginners:
 | `gg` / `G` | Jump to the top / bottom of the file |
 
 A safe way to learn: run `vimtutor` in the terminal. It is a 30-minute interactive lesson built into most Linux systems.
+
+![Editing a text file using nano](images/07-linux-nano-editor.png)
+![Editing a text file using Vim](images/07-linux-vim-editor.png)
 
 ## Compression and archives
 

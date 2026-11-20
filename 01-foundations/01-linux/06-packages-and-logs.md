@@ -6,7 +6,7 @@ I practiced these commands on Kali Linux in WSL2.
 
 ## Package management
 
-On Debian-based systems (Kali, Ubuntu) I use `apt`.
+On Debian-based systems (Kali, Ubuntu), I use `apt`.
 
 ```bash
 sudo apt update              # refresh the package list
@@ -20,7 +20,7 @@ apt search nmap | head       # search packages (the full list is long)
 apt show nmap                # package details
 dpkg -l | grep nmap          # check whether it is installed
 sudo apt install ./package.deb   # install a downloaded .deb file and resolve its dependencies
-sudo dpkg -i package.deb         # install a .deb file directly (does not fetch dependencies)
+sudo dpkg -i package.deb         # install a .deb file directly (does not automatically resolve dependencies)
 ```
 
 - `apt update` only refreshes the list of available packages, and `apt upgrade` installs the newer versions.
@@ -38,7 +38,8 @@ which tree
 echo $?
 ```
 
-![Searching, installing, checking and removing a package with apt](images/06-linux-apt-install-remove.png)
+![Searching, installing, checking and removing a package with apt](images/06-linux-apt-install-remove1.png)
+![Searching, installing, checking and removing a package with apt](images/06-linux-apt-install-remove2.png)
 
 - `apt search '^tree$'` found the package named exactly `tree`. The `^` and `$` match the start and end of the name, so related packages don't clutter the list.
 - `apt install tree -y` downloaded and installed it, and `tree --version` confirmed that the command works.
@@ -47,17 +48,19 @@ echo $?
 
 ## apt repositories and third-party software sources
 
-`apt` installs software from **repositories**: servers that hold packages. My system lists them in:
+`apt` installs software from **repositories**: servers that hold packages. My system stores repository configuration in:
 
 ```bash
-cat /etc/apt/sources.list    # main list of repositories
-ls /etc/apt/sources.list.d/  # extra repository files
+cat /etc/apt/sources.list       # older repository configuration file (may not exist)
+ls /etc/apt/sources.list.d/     # list additional repository files
 ```
 
-Newer systems may keep the main repository in a `.sources` file inside `/etc/apt/sources.list.d/` instead.
+Newer Kali installations may keep their main repository configuration in a `.sources` file inside `/etc/apt/sources.list.d/`.
+
+On my Kali system, the repository configuration is stored in `kali.sources`:
 
 ```bash
-cat /etc/apt/sources.list
+cat /etc/apt/sources.list.d/kali.sources
 ls /etc/apt/sources.list.d/
 cat /etc/apt/sources.list.d/*.sources 2>/dev/null | head -n 12
 ```
@@ -66,27 +69,38 @@ cat /etc/apt/sources.list.d/*.sources 2>/dev/null | head -n 12
 
 - A one-line entry such as `deb http://http.kali.org/kali kali-rolling main contrib non-free non-free-firmware` has four parts: the type (`deb` for binary packages), the repository URL, the release name (`kali-rolling`), and the components (`main`, `contrib` and so on).
 - In the newer `.sources` format, the same information appears as named fields such as `Types`, `URIs`, `Suites`, `Components` and `Signed-By`.
-- `Signed-By` points to the GPG key file that apt uses to check the repository's signatures.
-- Kali's repositories are set up for security tools. Whichever format my system uses, the screenshot shows the real one.
+- `Signed-By` points to the GPG key file that APT uses to check the repository's signatures.
+- My Kali system uses the `.sources` format. The screenshot shows the actual repository configuration, including its `kali-last-snapshot` suite.
+
+### Adding a third-party repository
 
 Adding a third-party source has three parts:
 
-1. Download the vendor's **GPG signing key**. This lets apt check that packages really come from them.
-2. Add a **source entry** that points to their repository.
+1. Download the vendor's **GPG signing key**. This lets APT verify that packages are signed by the expected repository key.
+2. Add a **source entry** that points to the vendor's repository.
 3. Run `sudo apt update`, then install the package.
 
-**Step 1: Save the vendor's key** (the URL and names below are placeholders; use the vendor's official instructions)
+**Step 1: Save the vendor's key**
+
+The URL and filename below are placeholders. Use the vendor's official instructions.
 
 ```bash
+sudo apt install gnupg curl -y
 sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://example.com/vendor-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/vendor.gpg
+curl -fsSL REAL_KEY_URL | sudo gpg --dearmor -o /etc/apt/keyrings/vendor.gpg
 ```
+
+- `gnupg` provides the `gpg` command, and `curl` downloads files.
+- Replace `REAL_KEY_URL` with the actual signing-key URL provided by the software vendor.
+- The example command will not work with a placeholder URL.
 
 **Step 2: Add the repository, tied to that key**
 
 ```bash
 echo "deb [signed-by=/etc/apt/keyrings/vendor.gpg] https://example.com/apt stable main" | sudo tee /etc/apt/sources.list.d/vendor.list
 ```
+
+This example uses a placeholder repository URL. Replace it with the actual repository address and release information provided by the vendor.
 
 **Step 3: Refresh and install**
 
@@ -95,37 +109,71 @@ sudo apt update
 sudo apt install vendor-package
 ```
 
-On Ubuntu, a **PPA** (Personal Package Archive) is a shortcut:
+`vendor-package` is also a placeholder. Use the actual package name provided by the vendor.
+
+**PPA (Ubuntu-specific)**
+
+On Ubuntu, a **PPA** (Personal Package Archive) is a shortcut for adding third-party software repositories:
 
 ```bash
 sudo add-apt-repository ppa:name/ppa
 sudo apt update
 ```
 
-To remove a source: delete its file in `/etc/apt/sources.list.d/` (and its key in `/etc/apt/keyrings/`), then run `sudo apt update`.
+PPAs are primarily an Ubuntu feature. Do not use random Ubuntu PPAs on Kali Linux.
+
+**Removing a third-party repository**
+
+To remove a source, delete its configuration file from `/etc/apt/sources.list.d/` and, if no longer needed, remove its associated key from `/etc/apt/keyrings/`. Then run:
+
+```bash
+sudo apt update
+```
 
 Security notes:
 
-- Every extra repository can install code with root access, so only add sources I trust, from the vendor's official documentation.
+- Every extra repository can install code with root access, so only add sources I trust, using the vendor's official documentation.
 - Older tutorials use `apt-key add`, which is deprecated. Use the `signed-by` method above.
 - Do not add random Ubuntu repositories to Kali, because mixing them can break the system. Back up or snapshot first.
 
 ## Logs
 
-Logs show what happened on the system. As a hacker I read them to understand detection; as a defender I read them to find attacks.
+Logs show what happened on the system. As someone learning offensive security, I read them to understand detection; as a defender, I read them to investigate suspicious activity.
 
 ```bash
-ls /var/log
-sudo tail -n 20 /var/log/syslog    # general system log (Ubuntu)
-sudo tail -n 20 /var/log/auth.log  # logins and sudo use (Ubuntu with rsyslog)
-sudo tail -f /var/log/auth.log     # follow live (Ctrl+C to stop)
-sudo journalctl -u ssh -n 20       # logs for the ssh service
-sudo journalctl -xe                # recent logs with explanations
-sudo grep "Failed password" /var/log/auth.log
-last                               # login history
+ls /var/log                       # list available log files
+sudo journalctl -b -n 20          # show the latest 20 logs from the current boot
+sudo journalctl -xe               # recent logs with explanations
+sudo journalctl -u ssh -n 20      # logs for the SSH service (if installed and running)
+sudo journalctl -u ssh -f        # follow SSH service logs live (Ctrl+C to stop)
+sudo journalctl -f                # follow all new system journal entries
+sudo journalctl _COMM=sshd        # show logs from the SSH daemon, if available
+last                               # login history, if login records are available
 ```
 
-If `/var/log/auth.log` does not exist, my system uses the systemd journal, so I use `journalctl` instead. In WSL, `journalctl` only works when systemd is running, and `auth.log` may be missing, so I used the package logs that always exist, because I had just installed and removed a package:
+On Kali Linux, systemd journal is commonly used for system and service logs. The `journalctl` command lets me read these logs.
+
+In WSL2, `journalctl` requires systemd to be running. To check whether systemd is running:
+
+```bash
+ps -p 1 -o comm=
+```
+
+If the output is `systemd`, systemd is running as PID 1.
+
+Some systems also have `/var/log/auth.log` and `/var/log/syslog`, but these files may not exist if `rsyslog` is not installed or running.
+
+If `auth.log` exists, I can inspect authentication-related events:
+
+```bash
+sudo tail -n 20 /var/log/auth.log
+sudo tail -f /var/log/auth.log
+sudo grep "Failed password" /var/log/auth.log
+```
+
+If these files do not exist, I use `journalctl` instead.
+
+I also practised reading package logs because I had recently installed and removed a package:
 
 ```bash
 ls /var/log
@@ -135,7 +183,9 @@ sudo grep " install tree" /var/log/dpkg.log
 
 ![Listing /var/log and reading the dpkg log](images/06-linux-dpkg-log.png)
 
-- `/var/log` holds the log files, and `ls` showed which ones exist on my system. A log such as `auth.log` or `syslog` only exists if a logging service is running.
-- `/var/log/dpkg.log` records every package action with a timestamp. The `tail` command showed the most recent entries.
+- `/var/log` holds log files, and `ls` showed which ones exist on my system. A log such as `auth.log` or `syslog` may not exist if the relevant logging service is not installed or running.
+- `journalctl` displays logs collected by systemd. I can filter them by boot, service or process.
+- `last` displays login history using available login records.
+- `/var/log/dpkg.log` records package management actions with timestamps. The `tail` command showed the most recent entries.
 - The `grep " install tree"` line found the moment I installed `tree`, with the date, time and version.
-- This is the same idea as reading `auth.log` for logins. A log is a time-ordered record, and `grep` finds the line I need.
+- This is the same idea as reading authentication logs for login activity. Logs are time-ordered records, and `grep` helps find the entries I need.

@@ -105,8 +105,7 @@ sudo service ssh restart
 sudo service ssh status
 ```
 
-![Checking and restarting the SSH service](images/05-linux-service-status1.png)
-![Checking and restarting the SSH service](images/05-linux-service-status2.png)
+![Checking and restarting the SSH service](images/05-linux-service-status.png)
 
 - `ps -p 1 -o comm=` showed what runs as PID 1 on my WSL (`init` or `systemd`).
 - `service ssh status` showed whether the SSH server was running, and I restarted it and checked again.

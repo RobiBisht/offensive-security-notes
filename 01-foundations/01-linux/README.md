@@ -31,4 +31,4 @@ My notes from learning Linux for ethical hacking, practiced on Kali Linux in WSL
 
 - [Networking notes](../02-networking/README.md)
 - [Windows basics](../03-windows-basics.md)
-- [OverTheWire Bandit notes](../05-bandit-progress.md): practicing these skills in a wargame
+- [OverTheWire Bandit notes](../04-bandit-progress.md): practicing these skills in a wargame
