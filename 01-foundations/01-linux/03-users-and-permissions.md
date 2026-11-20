@@ -203,7 +203,7 @@ sudo deluser --remove-home testuser
 
 - **SUID** (`s` in the owner position, like `-rwsr-xr-x`): the program runs with the owner's rights. Example: `/usr/bin/passwd`.
 - **SGID** (`s` in the group position): runs with the group's rights. On a directory, new files inherit the directory's group.
-- **Sticky bit** (`t`, like `drwxrwxrwt` on `/tmp`): users can only delete their own files in the directory.
+- **Sticky bit** (`t`, like `drwxrwxrwt` on `/tmp`): users generally cannot delete or rename files belonging to other users. Exceptions include the directory owner and root.
 
 | Special bit | Symbolic | Numeric (first digit) |
 |---|---|---|

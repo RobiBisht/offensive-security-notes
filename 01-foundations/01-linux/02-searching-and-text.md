@@ -19,7 +19,7 @@ echo "password=not-a-real-password" > config.txt
 find / -xdev -name "passwd" 2>/dev/null      # find a file by name
 find /home -type f -name "*.txt"             # find all .txt files
 find / -xdev -type f -size +10M 2>/dev/null  # files larger than 10 MB
-find / -xdev -perm -4000 2>/dev/null         # find SUID files
+find / -xdev -type f -perm -4000 2>/dev/null         # find SUID files
 find /etc -user root -type f 2>/dev/null | head -n 5   # files owned by root (first 5 only)
 
 locate passwd                                # fast search (run: sudo updatedb first)
@@ -36,7 +36,7 @@ grep -v "info" log.txt                       # show lines that do NOT match
 - `locate` may not be installed. On Kali I install it with `sudo apt install plocate`, then run `sudo updatedb`.
 - Linux has three standard data streams: 0 is standard input, 1 is standard output (normal results), and 2 is standard error (error messages).
 - `2>/dev/null` hides permission errors so the output stays readable.
-- `find / -perm -4000 2>/dev/null` finds SUID files, which are important for privilege escalation. See [Users and permissions](03-users-and-permissions.md) for what the SUID bit does.
+- `find / -xdev -type f -perm -4000 2>/dev/null` finds SUID files, which are important for privilege escalation. See [Users and permissions](03-users-and-permissions.md) for what the SUID bit does.
 
 ### Why `2>/dev/null` matters
 
@@ -120,7 +120,7 @@ cut -d ":" -f 1 /etc/passwd | sort | head -n 5
 - `uniq names.txt` printed all six lines unchanged, because `uniq` only removes duplicates that are **next to each other**. In my file, no identical lines are neighbours.
 - `sort names.txt | uniq` first puts identical lines together, so the result is `alice`, `bob`, `carol`. This is the same idea I used in OverTheWire Bandit.
 - `sort names.txt | uniq -c | sort -nr` counts each name and ranks them from most to least frequent: `alice` appears 3 times, `bob` 2 times and `carol` once.
-- The last pipeline cuts out the usernames, sorts them, and keeps the first 5 (`_apt`, `backup`, `bin`, `daemon`, `_dhcpcd`). Each command only does one small job, and the pipe joins them. `sort` ignored the leading underscore here, so `_apt` was sorted as if it were `apt`.
+- The last pipeline extracts usernames, sorts them, and keeps the first 5. The ordering depends on the active locale. In my output, `_apt` appeared before `backup`.
 
 ### Redirection
 

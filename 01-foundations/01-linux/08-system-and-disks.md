@@ -122,7 +122,7 @@ journalctl -b          # logs from the current boot
 journalctl -b -1       # logs from the previous boot, if available
 journalctl -b -p err   # error-priority messages from the current boot
 systemd-analyze        # summary of startup time
-systemd-analyze blame  # services ordered by time spent during startup
+systemd-analyze blame  # show service initialization times
 ```
 
 `journalctl -b` is especially useful when investigating startup or service problems. Some commands may show limited information depending on permissions and the system's log retention settings.
@@ -289,7 +289,7 @@ df -T                                      # show filesystem types for mounted f
 sudo file -s "$(findmnt -no SOURCE /)"     # inspect the device that holds the root filesystem
 ```
 
-`findmnt -no SOURCE /` prints the device that holds `/`, so I don't have to guess a name like `/dev/sda1`.
+`findmnt -no SOURCE /` may return a virtual or overlay source in WSL, so file -s isn't guaranteed to identify the underlying physical storage
 
 ### Files, directories and inodes
 

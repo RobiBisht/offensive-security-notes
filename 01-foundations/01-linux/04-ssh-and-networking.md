@@ -161,7 +161,7 @@ kill %1
 - `ss -tuln` showed a `LISTEN` line for port 8000.
 - `wget` fetched `names.txt` over HTTP, and the server printed a log line for the request (`GET /names.txt` with status `200`).
 - `cat` showed that the downloaded file matches the original.
-- `kill %1` stopped the server (job number 1).
+- `kill %1` stopped the server (job number 1), The job number may differ.
 
 ## Cleaning up
 

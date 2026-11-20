@@ -144,14 +144,14 @@ Format: `minute hour day-of-month month day-of-week command`
 0 9 * * 1 /home/user/weekly.sh             # Mondays at 9:00
 ```
 
-I added a job that writes the date every minute, waited, and read the file. `crontab -r` removes **all** my cron jobs, so I only use it when my crontab holds nothing else:
+I added a job that writes the date every minute, waited, and read the file. After testing, I removed only the test job using `crontab -e` so that any existing cron jobs remained untouched:
 
 ```bash
 (crontab -l 2>/dev/null; echo '* * * * * date >> /tmp/cron-test.txt') | crontab -
 crontab -l
 sleep 65
 cat /tmp/cron-test.txt
-crontab -r
+crontab -e
 ```
 
 ![Adding a cron job and reading its output](images/05-linux-cron-job.png)
@@ -159,7 +159,7 @@ crontab -r
 - The first command appended a new line to my existing crontab (if any) and loaded it. This does the same as `crontab -e`, without opening an editor.
 - `crontab -l` listed the job.
 - After about a minute, `/tmp/cron-test.txt` contained a date line written by cron, which proves the job ran on its own.
-- `crontab -r` removed the job when I finished.
+- `crontab -e` opened the crontab editor, where I removed only the test job. I then used `crontab -l` to verify the remaining jobs.
 
 ## Process IDs and signals in depth
 
@@ -186,7 +186,7 @@ kill -1 1234   # SIGHUP: hang up; many services reload their config
 
 | Signal | Number | Meaning |
 |---|---|---|
-| SIGHUP | 1 | Terminal closed or reload configuration |
+| SIGHUP | 1 | traditionally means hangup; some services interpret it as a request to reload configuration |
 | SIGINT | 2 | Interrupt (Ctrl + C) |
 | SIGTERM | 15 | Polite request to terminate |
 | SIGKILL | 9 | Force kill |
