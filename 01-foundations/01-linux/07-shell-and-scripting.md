@@ -78,9 +78,10 @@ cat "my notes.txt"      # read a file whose name contains a space
 mkdir "Linux Practice"  # create a directory with a space in its name
 ```
 
-I compared quoted and unquoted versions:
+I compared quoted and unquoted versions. The first line removes any leftover directories from earlier runs, so the `mkdir` commands below start clean:
 
 ```bash
+rmdir Linux Practice "Linux Practice" 2>/dev/null
 echo "My home is $HOME"
 echo 'My home is $HOME'
 mkdir Linux Practice
@@ -158,7 +159,7 @@ I also looked at the PATH one folder per line, and compared an exported variable
 ```bash
 echo $HOME
 echo $USER
-echo $PATH | tr ':' '\n'
+echo "$PATH" | tr ':' '\n' | grep -v '^/mnt/'
 export MYVAR="test"
 LOCALVAR="hi"
 bash -c 'echo "exported: $MYVAR / not exported: [$LOCALVAR]"'
@@ -168,9 +169,10 @@ type ll
 
 ![Environment variables, PATH and export](images/07-linux-env-path.png)
 
-- `echo $PATH | tr ':' '\n'` put each folder of the PATH on its own line. The shell searches these folders, in this order, when I type a command name.
+- `echo "$PATH" | tr ':' '\n' | grep -v '^/mnt/'` put each folder of the PATH on its own line. The shell searches these folders, in this order, when I type a command name.
+- In WSL, the Windows folders are added to the end of the PATH under `/mnt/c`. They contain my Windows user name and the programs I have installed, so I hide them with `grep -v '^/mnt/'`.
 - A variable I `export` is passed to child processes. The new `bash -c` process printed `test` for `MYVAR`, but the plain variable `LOCALVAR` came out empty (`[]`).
-- `type ll` showed that `ll` is an alias for `ls -lah`. It only lasts for this session unless I put it in `~/.bashrc` (or `~/.zshrc`).
+- `alias ll='ls -lah'` created a shortcut for this session only. It is lost when I close the terminal, unless I add it to `~/.bashrc`.
 
 PATH matters for security: if a privileged script runs a command without its full path and I can control PATH, I may be able to run my own program instead. Understanding it now will help me recognize it later in privilege escalation labs.
 
@@ -196,6 +198,7 @@ fi
 Run it. The file has no execute permission when it is new, so the first run fails:
 
 ```bash
+chmod -x hello.sh
 cat hello.sh
 ./hello.sh Alice
 chmod +x hello.sh
@@ -204,12 +207,13 @@ chmod +x hello.sh
 
 ![Running a script before and after chmod +x](images/07-linux-script-run.png)
 
+- `chmod -x hello.sh` first removed the execute permission, so the file starts out as a new, non-executable file.
 - `cat hello.sh` showed the script I wrote.
 - The first `./hello.sh Alice` printed a "permission denied" message, because the file had no execute permission.
 - After `chmod +x`, the script ran. `$1` held the first argument (`Alice`), so it printed `Hello, Alice`, counted from 1 to 3, and reported that `/etc/passwd` exists.
 - The first line, `#!/bin/bash`, tells the system which program should run the script.
 
-A small recon-style script (a ping sweep). For my own lab network I use its address range. In WSL I tested the loop on loopback addresses, which all answer:
+A small recon-style script (a ping sweep). The address range below is for my own lab network:
 
 ```bash
 #!/bin/bash
@@ -217,6 +221,12 @@ A small recon-style script (a ping sweep). For my own lab network I use its addr
 for i in $(seq 1 20); do
   ping -c 1 -W 1 192.168.56.$i &> /dev/null && echo "192.168.56.$i is up"
 done
+```
+
+To test the loop on a single machine, I can use loopback addresses, which all answer:
+
+```bash
+for i in 1 2 3; do ping -c 1 -W 1 127.0.0.$i &> /dev/null && echo "127.0.0.$i is up"; done
 ```
 
 ## Text editors: nano and Vim
@@ -265,8 +275,12 @@ Vim has **modes**, and this is what confuses beginners:
 
 A safe way to learn: run `vimtutor` in the terminal. It is a 30-minute interactive lesson built into most Linux systems.
 
-![Editing a text file using nano](images/07-linux-nano-editor.png)
-![Editing a text file using Vim](images/07-linux-vim-editor.png)
+![Editing text in nano](images/07-linux-nano-editor.png)
+![Editing text in Vim with line numbers, in insert mode](images/07-linux-vim-editor.png)
+
+- nano shows its shortcuts at the bottom, where `^` means the `Ctrl` key (`^O` Write Out saves, `^X` exits). The `*` in the title means there are unsaved changes.
+- The title says `New Buffer` because I started nano without a file name. With `nano notes.txt`, the file name appears there instead.
+- In Vim, `:set number` turned on line numbers, and `i` switched to insert mode. `-- INSERT --` at the bottom shows the current mode, and `2,11` is the cursor position (line 2, column 11).
 
 ## Compression and archives
 
@@ -286,6 +300,7 @@ unzip archive.zip
 I created a folder with three files, compressed it, listed the archive, and extracted it somewhere else:
 
 ```bash
+rm -rf tar-demo
 mkdir -p tar-demo/src
 for n in 1 2 3; do echo "File $n" > tar-demo/src/file$n.txt; done
 tar -czvf tar-demo/archive.tar.gz -C tar-demo src

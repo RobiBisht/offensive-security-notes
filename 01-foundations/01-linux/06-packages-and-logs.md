@@ -38,8 +38,8 @@ which tree
 echo $?
 ```
 
-![Searching, installing, checking and removing a package with apt](images/06-linux-apt-install-remove1.png)
-![Searching, installing, checking and removing a package with apt](images/06-linux-apt-install-remove2.png)
+![Searching for and installing the tree package with apt (1 of 2)](images/06-linux-apt-install-remove1.png)
+![Checking and removing the tree package with apt (2 of 2)](images/06-linux-apt-install-remove2.png)
 
 - `apt search '^tree$'` found the package named exactly `tree`. The `^` and `$` match the start and end of the name, so related packages don't clutter the list.
 - `apt install tree -y` downloaded and installed it, and `tree --version` confirmed that the command works.
@@ -187,5 +187,5 @@ sudo grep " install tree" /var/log/dpkg.log
 - `journalctl` displays logs collected by systemd. I can filter them by boot, service or process.
 - `last` displays login history using available login records.
 - `/var/log/dpkg.log` records package management actions with timestamps. The `tail` command showed the most recent entries.
-- The `grep " install tree"` line found the moment I installed `tree`, with the date, time and version.
+- The `grep " install tree"` command listed every time I installed `tree`, with the date, time and version. There are several lines because I installed it more than once while practicing.
 - This is the same idea as reading authentication logs for login activity. Logs are time-ordered records, and `grep` helps find the entries I need.

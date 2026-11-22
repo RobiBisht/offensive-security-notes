@@ -140,10 +140,10 @@ systemd-analyze 2>/dev/null || echo "systemd-analyze is not available"
 
 ![Boot-related information in WSL](images/08-linux-boot-info.png)
 
-- `ps -p 1` identified the first process (PID 1), which starts everything else. In WSL it is `init` unless systemd is enabled.
+- `ps -p 1` identified the first process (PID 1), which starts everything else. On my WSL it is `systemd`.
 - `/proc/cmdline` showed the parameters that were passed to the kernel when it started.
 - `uptime -s` printed the time when this WSL instance started.
-- If systemd isn't running, the last two lines print a message. With systemd, they show the default target and the startup time summary.
+- Because systemd is running here, the last two lines showed the default target (`graphical.target`) and a startup time summary of under a second. If systemd isn't running, they print a message instead.
 
 ## Disk management
 

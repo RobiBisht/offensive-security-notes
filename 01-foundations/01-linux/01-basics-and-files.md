@@ -163,7 +163,7 @@ nano hello.txt                    # open a file in the Nano text editor (Ctrl+O 
 - `ls -l /etc/passwd /etc/shadow` displays detailed information about both files, including their permissions, owner, group, size, and modification date.
 - `/etc/passwd` is generally readable by all users, while `/etc/shadow` has restricted permissions because it contains sensitive password hashes.
 - The permission string at the beginning shows who can read, write, or execute each file.
-- `root` is the owner of both files. The group ownership of `/etc/shadow` may be `shadow`.
+- `root` is the owner of both files. In my output, `/etc/passwd` is `-rw-r--r--` (readable by everyone), and `/etc/shadow` is `-rw-r-----` with the group `shadow`, so only root and members of the `shadow` group can read it.
 
 ![cat /etc/os-release showing Kali Linux distribution and version information](images/01-linux-os-release.png)
 

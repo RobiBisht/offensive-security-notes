@@ -17,15 +17,15 @@ My notes from learning Linux for ethical hacking, practiced on Kali Linux in WSL
 
 ## Progress
 
-- [✓] Basics and files
-- [✓] Searching and text processing
-- [✓] Users and permissions
-- [✓] SSH and networking
-- [✓] Processes, services and cron
-- [✓] Packages and logs
-- [✓] Shell and scripting
-- [✓] System, boot, disks and file systems
-- [✓] Practice exercises
+- [x] Basics and files
+- [x] Searching and text processing
+- [x] Users and permissions
+- [x] SSH and networking
+- [x] Processes, services and cron
+- [x] Packages and logs
+- [x] Shell and scripting
+- [x] System, boot, disks and file systems
+- [x] Practice exercises
 
 ## Related
 

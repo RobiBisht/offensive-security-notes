@@ -8,7 +8,7 @@ I practiced these commands on Kali Linux in WSL2. WSL may not run systemd, so I 
 ps -p 1 -o comm=
 ```
 
-If it prints `systemd`, I can use `systemctl`. If it prints `init`, I use `service` instead.
+If it prints `systemd`, I can use `systemctl`. If it prints `init`, I use `service` instead. On my WSL it prints `systemd`, so both work.
 
 ## Processes and services
 
@@ -70,6 +70,7 @@ jobs
 - `Ctrl + Z` paused it, and `jobs` showed `Stopped`.
 - `bg %1` resumed it in the background, and `jobs` showed `Running` again.
 - `kill %1` terminated the job, and the next `jobs` showed `Terminated` (or nothing).
+- If other background jobs are already running in the terminal, the job number is higher (for example `%2`), so I check `jobs` first and use the number it shows.
 
 ### Services
 
@@ -107,7 +108,7 @@ sudo service ssh status
 
 ![Checking and restarting the SSH service](images/05-linux-service-status.png)
 
-- `ps -p 1 -o comm=` showed what runs as PID 1 on my WSL (`init` or `systemd`).
+- `ps -p 1 -o comm=` printed `systemd`, so PID 1 on my WSL is systemd, and `systemctl` works as well as `service`.
 - `service ssh status` showed whether the SSH server was running, and I restarted it and checked again.
 - This is the same idea as `systemctl status` and `systemctl restart ssh` on a system with systemd.
 
@@ -147,6 +148,7 @@ Format: `minute hour day-of-month month day-of-week command`
 I added a job that writes the date every minute, waited, and read the file. After testing, I removed only the test job using `crontab -e` so that any existing cron jobs remained untouched:
 
 ```bash
+rm -f /tmp/cron-test.txt
 (crontab -l 2>/dev/null; echo '* * * * * date >> /tmp/cron-test.txt') | crontab -
 crontab -l
 sleep 65
@@ -158,7 +160,7 @@ crontab -e
 
 - The first command appended a new line to my existing crontab (if any) and loaded it. This does the same as `crontab -e`, without opening an editor.
 - `crontab -l` listed the job.
-- After about a minute, `/tmp/cron-test.txt` contained a date line written by cron, which proves the job ran on its own.
+- After a few minutes, `/tmp/cron-test.txt` held one date line per minute, each at the start of a minute (for example `11:40:01`, `11:41:01` and `11:42:01`). That shows cron ran the job on its own, every minute.
 - `crontab -e` opened the crontab editor, where I removed only the test job. I then used `crontab -l` to verify the remaining jobs.
 
 ## Process IDs and signals in depth

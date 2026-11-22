@@ -513,7 +513,7 @@ Save and exit nano. Make it executable and run it:
 
 ```bash
 chmod +x hello.sh
-./hello.sh Robi
+./hello.sh Alice
 ```
 
 `$1` represents the first argument supplied to the script.
