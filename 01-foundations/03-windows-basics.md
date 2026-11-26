@@ -350,4 +350,4 @@ Commands for things that no longer exist print an error, which is fine.
 - PowerShell passes objects, so I can sort and filter results directly, and Command Prompt only handles text.
 - UAC means that an administrator account runs with a limited token until I elevate, and `whoami /groups` shows which one I have.
 - Permissions, the registry, services, scheduled tasks and the `Run` keys are the same places where attackers hide, so a defender checks all of them.
-- The Security event log records what I did, so I can read my own actions the way a defender would.
+- The Security event log records what I did, so I can read my own actions the way a defender would..
