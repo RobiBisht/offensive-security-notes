@@ -3,11 +3,13 @@
 Levels 0 to 20 completed: 2026-11-DD
 Link: https://overthewire.org/wargames/bandit/
 
+
 ## Connection (same for every level)
 
 `ssh banditN@bandit.labs.overthewire.org -p 2220`
 
 Replace N with the level you are logging in to, for example bandit0, bandit1. Save each password in a private file on my computer, never in this repo.
+
 
 ## Summary table
 
@@ -28,7 +30,6 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 | 12 to 13 | Hex dumps, compression formats, archives | xxd -r, file, gunzip, bunzip2, tar, mktemp |
 
 
-
 ## Level 0 → 1
 
 **Goal:** log in with SSH and read a file in the home directory.
@@ -41,6 +42,7 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 **Learned:** SSH uses a username, a host and a port. Always run `ls` before guessing a file name.
 
 **Confusing:** There wasn't that much confusing in this level.
+
 
 ## Level 1 → 2
 
@@ -55,6 +57,7 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 
 **Confusing:** I was stuck here for a long time. After researching it, I understood that the shell wasn't failing to find the file, it was reading the name as an option.
 
+
 ## Level 2 → 3
 
 **Goal:** read a file whose name contains spaces and starts with dashes.
@@ -67,6 +70,7 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 **Learned:** Two separate problems were in one file name. Spaces make the shell split a name into several arguments, which quotes fix. A name starting with `-` or `--` is read as a command option, which `./` before the name fixes. I needed both together.
 
 **Confusing:** I knew quotes handle spaces, so I tried double quotes first, but `cat` still gave an "unexpected argument" error. I searched and found that the leading `--` was the real problem, since the quotes only fixed the spaces. Adding `./` made it work.
+
 
 ## Level 3 → 4
 
@@ -83,6 +87,7 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 
 **Confusing:** My first `cat` attempts failed with "No such file or directory" because I typed the name with the wrong capital letters. Linux file names are case-sensitive, so `Hiding` and `hiding` are different names. Now I copy the name from the `ls -a` output or press Tab to complete it.
 
+
 ## Level 4 → 5
 
 **Goal:** find the one human-readable file among several files with names starting with a dash.
@@ -98,6 +103,7 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 **Confusing:** Reading binary files with `cat` filled my terminal with garbage characters, and a few prompts looked broken. Typing `reset` fixes a messy terminal. Trying every file by hand worked here, but it would be slow with 100 files, so `file` is the better habit.
 
 **Tried:** `cat ./-file*` printed every file at once. It worked, but binary files filled the screen with unreadable characters and the password was lost in the noise. `file ./-file*` shows each file's type, so I can pick the text file and read only that.
+
 
 ## Level 5 → 6
 
@@ -119,6 +125,7 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 
 **Lesson:** Copy the exact path that `find` prints instead of retyping it. A dot and a dash look similar but are different characters, and similar file names can hide a decoy. Running `cat` straight on the path from `find` (`cat ./folder/.file2`) skips the typing error.
 
+
 ## Level 6 → 7
 
 **Goal:** find a file somewhere on the whole server using its owner, group and size.
@@ -137,6 +144,7 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 
 **Confusing:** My first search printed a huge list that scrolled for a long time, because I hadn't narrowed it enough. Adding the owner, group and size filters fixed it.
 
+
 ## Level 7 → 8
 
 **Goal:** find one line in a very large text file, using a keyword given in the level.
@@ -150,7 +158,6 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 
 **Confusing:** Nothing much in this level, since `grep` was clear once I knew what to search for.
 
-**Next time:** grep flags I want to practice: `-i` ignores case, `-n` shows line numbers, `-c` counts matching lines, `-v` shows lines that don't match.
 
 ## Level 8 → 9
 
@@ -167,8 +174,6 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 **Learned:** `uniq` only compares lines that are right next to each other, so it must be used after `sort`. Without `sort`, the duplicates are scattered and `uniq` can't remove them. This was my first real use of a pipe, where the output of one command becomes the input of the next.
 
 **Confusing:** I didn't know why `uniq` alone didn't work until I read that it only checks neighbouring lines.
-
-**Extra flags to try:** `uniq -c` counts how many times each line appears, and `uniq -d` prints only the duplicated lines. `sort data.txt | uniq -c | sort -nr` ranks lines by how often they appear.
 
 
 ## Level 9 → 10
@@ -222,8 +227,6 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 
 **Confusing:** I didn't understand how the two sets lined up until I tried `echo abc | tr 'a-c' 'x-z'`", or "Nothing".
 
-**Try it:** `echo "Hello" | tr 'A-Za-z' 'N-ZA-Mn-za-m'` gives `Uryyb`. Run the result through the same command and you get `Hello` back.
-
 
 ## Level 12 → 13
 
@@ -242,7 +245,5 @@ Replace N with the level you are logging in to, for example bandit0, bandit1. Sa
 **Learned:** The file's name and its real type are different things, so `file` is the tool to trust. The loop for the whole level is: run `file`, rename the file with the right extension, unpack it, then run `file` again, until it says ASCII text. `gunzip` and `bunzip2` refuse files without the right extension, which is why `mv` was needed each time. `xxd -r` reverses a hex dump, which is how a text file can hold a binary file.
 
 **Confusing:** I pasted several commands in one go, and when `gunzip` asked "do you wish to overwrite (y or n)?", it took my next pasted line as the answer, so the overwrite was skipped and the next command was lost. `bzip2` also complained that the output file already existed, because I had already run it once. I also made a typo in a file name (`cat extracted/dat8`), which gave "No such file or directory". Now I run one command at a time, check the result with `file` and `ls`, and use Tab to complete names.
-
-**Tip for next time:** Keep each unpacked file in its own clearly named folder, and run `ls` before every step so I always know which file I'm on.
 
 

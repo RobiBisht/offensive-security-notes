@@ -2,6 +2,8 @@
 
 [Back to networking index](README.md)
 
+I ran the commands in this file on Kali Linux (WSL2) and on Windows.
+
 ## OSI model (7 layers)
 
 | Sr no. | Layer | Job | PDU | Examples / Devices |
@@ -78,4 +80,23 @@ traceroute google.com
 curl -I http://example.com   # Layer 7 response headers
 ```
 
-**Task:** Run `ping 8.8.8.8` while Wireshark captures. Expand one packet and identify the Ethernet, IP and ICMP headers. This is the layer stack in action.
+`traceroute` may need installing first: `sudo apt install traceroute -y`.
+
+**Task:** Run `ping 8.8.8.8` while Wireshark captures. Expand one packet and identify the Ethernet, IP and ICMP headers. This is the layer stack in action. I did this part in [Wireshark captures explained](05-wireshark-captures-explained.md), Capture 1.
+
+I ran these commands in Kali (WSL2):
+
+```bash
+ip addr
+ip route
+ping -c 4 8.8.8.8
+curl -I http://example.com
+```
+
+![ip addr, ip route, ping and curl -I in Kali](images/01-layers-commands.png)
+
+- `ip addr` shows two layers at once: the `link/ether` line is the **MAC address** (Layer 2), and the `inet` line is the **IP address** (Layer 3).
+- `ip route` shows the **default gateway**, the router my packets are sent to when the destination is not on my own network. At Layer 2 the frame is addressed to the gateway's MAC address.
+- `ping` works at Layer 3. Each reply shows the TTL and the round-trip time, and the summary shows packet loss.
+- `curl -I` works at Layer 7. It printed the HTTP status line and the response headers, so it proves that the whole stack below it works.
+- Going from the bottom up is the same method as the troubleshooting list above.

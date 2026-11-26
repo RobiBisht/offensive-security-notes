@@ -6,7 +6,8 @@ Wireshark is a packet analyser. It captures traffic on a network interface and s
 
 ## Setting up
 
-- **Install:** on Windows, download from wireshark.org (include Npcap). Kali already has it. On Ubuntu, run `sudo apt install wireshark`.
+- **Install:** on Windows, download from wireshark.org (include Npcap, and the loopback adapter option). I used Wireshark on Windows for most captures, and Wireshark in Kali (a Linux app that runs through WSLg) for the screenshots in this file, capturing on `eth0`. On Kali or Ubuntu (including WSL), the command-line version is `sudo apt install tshark -y`, and the GUI is `sudo apt install wireshark`.
+- **Capturing WSL traffic:** the traffic of my WSL2 Kali passes through a virtual interface on Windows, named `vEthernet (WSL)` (the exact name can differ). I capture on that interface to see it. Windows' own Internet traffic uses my Wi-Fi or Ethernet interface, and traffic from Windows to itself (`127.0.0.1`) uses the Npcap loopback adapter.
 - **Capturing without root on Linux:** add my user to the `wireshark` group with `sudo usermod -aG wireshark $USER`, then log out and back in.
 - **Start a capture:** open Wireshark, pick the active interface (the one with a moving graph), and click the blue shark fin.
 - **Stop and save:** click the red square, then save the capture as `.pcapng`.
@@ -18,6 +19,12 @@ Wireshark is a packet analyser. It captures traffic on a network interface and s
 | Packet List (top) | One line per packet: No., Time, Source, Destination, Protocol, Length, Info |
 | Packet Details (middle) | Expandable tree of layers: Frame, Ethernet, IP, TCP or UDP, then the application |
 | Packet Bytes (bottom) | Raw hex and ASCII of the selected packet |
+
+![The three panes of Wireshark with a ping packet open](images/04-wireshark-panes.png)
+
+- The top pane lists the packets. I captured on `eth0` in Kali while I ran `ping -c 4 8.8.8.8`, and I selected one ICMP echo request.
+- The middle pane shows the layers of that packet as a tree: Frame, Ethernet II, Internet Protocol (IPv4) and ICMP. Expanding a layer shows its fields, for example the TTL under IPv4.
+- The bottom pane shows the same packet as raw bytes. Clicking a field in the middle pane highlights its bytes here, which shows exactly where each field sits.
 
 ## Capture filters vs display filters
 
@@ -45,9 +52,17 @@ Wireshark is a packet analyser. It captures traffic on a network interface and s
 | TCP problems | `tcp.analysis.retransmission`, `tcp.analysis.flags` |
 | MAC address | `eth.addr == aa:bb:cc:dd:ee:ff` |
 
-A green filter bar means the syntax is valid, and red means a mistake. (In the table, the `\|\|` is how I write `||` so the table doesn't break. In Wireshark I type `||`.)
+A green filter bar means the syntax is valid, and red means a mistake.
+
+![A valid display filter, shown with a green bar](images/04-wireshark-filter.png)
+
+- I captured on `eth0` while I ran a lookup, and I typed `dns` in the display filter bar. It turned green, so the filter is valid, and the packet list showed only DNS packets after I pressed Enter.
+- An unfinished filter such as `dns ==` turns the bar red until I complete it.
+- Display filters only hide rows. The other packets are still in the capture, and clearing the filter shows them again. (In the table, the `\|\|` is how I write `||` so the table doesn't break. In Wireshark I type `||`.)
 
 ## Practical exercises
+
+I did these practicals and documented each one, with screenshots, in [Wireshark captures explained](05-wireshark-captures-explained.md).
 
 ### Practical 14: Capture a ping (ICMP)
 
@@ -69,7 +84,7 @@ A green filter bar means the syntax is valid, and red means a mistake. (In the t
 
 ### Practical 17: Why clear-text protocols are dangerous
 
-Use only an intentionally vulnerable lab target (Metasploitable, DVWA) or my own test server.
+Use only an intentionally vulnerable lab target or my own test server. I used my own test server on Windows (PowerShell): `python -m http.server 8000 --bind 127.0.0.1`, captured on the Npcap loopback adapter, and sent a fake login with `curl.exe -d "username=testuser&password=not-a-real-password" http://127.0.0.1:8000/login`. The server answers with an error because it cannot handle POST requests, but the request still travels in plain text, which is all this exercise needs.
 
 1. Filter: `http.request.method == "POST"` while logging in to the test site over HTTP.
 2. Open the packet and look at the HTML Form URL Encoded section. The username and password are visible in plain text.
@@ -77,7 +92,7 @@ Use only an intentionally vulnerable lab target (Metasploitable, DVWA) or my own
 
 ### Practical 18: Spot an Nmap SYN scan in my capture
 
-1. Capture on my lab interface while running `sudo nmap -sS <lab target>` against my own lab machine.
+1. Capture on my lab interface while running `sudo nmap -sS <lab target>` against my own lab machine. In my setup I capture on the `vEthernet (WSL)` interface and scan the gateway address that `ip route` shows in WSL. That address is my own Windows machine.
 2. Use the filter `tcp.flags.syn == 1 && tcp.flags.ack == 0`. I will see hundreds of SYNs from one source to many different ports.
 3. Open Statistics, then Conversations, then the TCP tab, to see them all. Many conversations with tiny packets and RSTs signal a scan.
 

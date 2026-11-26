@@ -2,7 +2,7 @@
 
 [Back to networking index](README.md)
 
-Example IP addresses below are examples. In my own lab I replace them with the addresses of my VMs and my gateway. I only scan or test networks that I own or have permission to test.
+Example IP addresses below are examples. In my own lab I replace them with the addresses of my own machines and my gateway. I practiced on Kali Linux in WSL2 and on Windows. WSL2 uses a virtual network provided by Windows, so some things behave differently from a physical network, and I note this where it matters. I only scan or test networks that I own or have permission to test.
 
 ## MAC addresses
 
@@ -50,6 +50,22 @@ ipconfig /all        # Windows: Physical Address
 ip link show         # Linux: link/ether
 ```
 
+I looked at the interfaces and the MAC address in Kali:
+
+```bash
+ip -br link
+ip link show eth0
+```
+
+![MAC addresses of my interfaces](images/03-mac-address.png)
+
+- `ip -br link` lists my interfaces with their state and MAC address. `lo` is the loopback interface (its MAC is all zeros), and `eth0` is the virtual network card that Windows gives to WSL.
+- In `ip link show eth0`, the `link/ether` line is the MAC address. The first 3 bytes are the OUI (the vendor), and the last 3 bytes identify the device. `brd ff:ff:ff:ff:ff:ff` is the broadcast MAC.
+- This MAC belongs to a **virtual** adapter, not to a physical card, so the vendor prefix is that of the virtualization software. WSL gives `eth0` a new virtual MAC when it restarts, so the address can differ between my sessions. `00:15:5d` is the prefix that Microsoft uses for Hyper-V virtual adapters, and Wireshark shows it as `Microsoft_...`.
+- The second hex digit of the first byte tells me whether the address is globally unique or locally administered (2, 6, A or E means locally administered).
+
+**Warning for WSL:** I do not run the spoofing commands below in WSL. Bringing `eth0` down cuts WSL's network, and the virtual adapter may refuse the change. I only run them on a VirtualBox VM that I can snapshot.
+
 Temporarily spoof on Kali (resets on reboot). The interface may not be called `eth0`, so check the name with `ip link show` first:
 
 ```
@@ -94,24 +110,43 @@ ping 192.168.1.1        # forces a fresh ARP exchange
 arp -a                  # the entry is back
 ```
 
-Send my own ARP request (Linux):
+Send my own ARP request (Linux). `arp` comes from `net-tools`, and `arping` and `netdiscover` may need installing: `sudo apt install net-tools arping netdiscover -y`.
 
 ```
 sudo arping -c 3 192.168.1.1
 ```
 
-Discover live hosts on my own LAN using ARP:
+Discover live hosts on my own LAN using ARP (use my real subnet from `ip route`, because `192.168.1.0/24` is only an example):
 
 ```
 sudo nmap -sn 192.168.1.0/24
 sudo netdiscover -r 192.168.1.0/24
 ```
 
+I looked at the ARP (neighbor) cache before and after pinging the gateway:
+
+```bash
+GW=$(ip route | awk '/default/ {print $3}')
+echo "$GW"
+ip neigh show
+ping -c 1 "$GW"
+ip neigh show "$GW"
+```
+
+![The ARP cache and the default gateway](images/03-arp-cache.png)
+
+- The first command took the default gateway's address out of `ip route` and stored it in the variable `GW`.
+- `ip neigh show` lists the ARP cache. Each entry has an IP address, the interface, `lladdr` (the MAC address) and a state such as `REACHABLE` or `STALE`.
+- The gateway was already in the cache with the state `STALE`, which means the entry is known but has not been confirmed recently. After `ping -c 1`, the state changed to `REACHABLE`, because the ping reply confirmed that the gateway still has that MAC address. (Right after the ping, the state can also show `DELAY` for a moment, while the kernel waits for that confirmation.)
+- The ping reply had a TTL of 128, the Windows default. That fits, because the default gateway of WSL is my Windows machine.
+- To watch ARP start from nothing, I can run `sudo ip neigh flush all` first, so that the entry is missing before the ping.
+- `arp -a` shows the same information in an older format.
+
 ### Practical 6: Watch ARP in Wireshark
 
 - Start a capture on my Wi-Fi or Ethernet interface, with the display filter `arp`.
 - Run `arp -d *` (Windows, as admin) and then `ping 192.168.1.1`.
-- I should see one broadcast request and one unicast reply.
+- I should see one broadcast request and one unicast reply. My own capture is in [Wireshark captures explained](05-wireshark-captures-explained.md), Capture 4.
 
 ### ARP spoofing (ARP poisoning): the attack
 
@@ -186,6 +221,22 @@ ipconfig /displaydns                  # Windows: show the cache
 ipconfig /flushdns                    # Windows: clear the cache
 ```
 
+`dig` and `nslookup` may need installing: `sudo apt install dnsutils -y`. I ran a few lookups:
+
+```bash
+nslookup example.com
+dig example.com A +noall +answer
+dig example.com NS +noall +answer
+dig -x 8.8.8.8 +short
+```
+
+![DNS lookups with nslookup and dig](images/03-dns-lookups.png)
+
+- `nslookup` shows which DNS server answered (in WSL it is a virtual address provided by Windows) and the addresses for `example.com`, both IPv4 and IPv6.
+- `dig ... +noall +answer` prints only the answer lines: the name, the **TTL** (how many seconds the answer may be cached), the class `IN`, the record type and the data.
+- The `NS` query listed the authoritative name servers of the domain.
+- `dig -x 8.8.8.8 +short` is a **reverse lookup** (a PTR record). It turned the address back into a name, `dns.google.`.
+
 Sample `dig` output (trimmed, with a documentation address):
 
 ```
@@ -209,7 +260,7 @@ How to read it: the record type is A, the answer is `203.0.113.10`, it may be ca
 ### Practical 8: See DNS in Wireshark
 
 - Capture with the display filter `dns`, then run `nslookup example.com`.
-- Open the query packet and note UDP with destination port 53. Open the response and look at the Answers section.
+- Open the query packet and note UDP with destination port 53. Open the response and look at the Answers section. My own capture is in [Wireshark captures explained](05-wireshark-captures-explained.md), Capture 3.
 
 ## DHCP (Dynamic Host Configuration Protocol)
 
@@ -243,6 +294,8 @@ sudo dhclient -r eth0     # release
 sudo dhclient eth0        # request
 nmcli device show eth0    # lease details (NetworkManager)
 ```
+
+On Windows, `ipconfig /release` drops the connection for a few seconds, so I run it only when I can afford to be offline. In WSL, the network follows Windows, and I did not run `dhclient` there. My own capture of the four DORA packets is in [Wireshark captures explained](05-wireshark-captures-explained.md), Capture 5.
 
 Nmap can look for DHCP servers on the LAN:
 
@@ -295,9 +348,9 @@ ip addr | grep inet       # private IP, for example 192.168.1.10
 curl ifconfig.me          # public IP, which is different
 ```
 
-Run Wireshark on my PC and again on a VM behind another NAT. The source IP and port that the destination sees differ from what I sent.
+My private and public addresses differ, which is NAT at work. The screenshot is in [IP addressing and subnetting](02-ip-and-subnetting.md). WSL2 normally sits behind one more NAT layer provided by Windows, and my router is another one, so the source IP and port that a website sees differ from what my machine sent.
 
-**VirtualBox lab:** set a VM's network to **NAT**. It sits behind VirtualBox's NAT, gets `10.0.2.15`, can reach the Internet, but cannot be reached from outside. Switch to **Bridged** to place it directly on my LAN.
+**VirtualBox lab (reference only, I did not run this in WSL):** set a VM's network to **NAT**. It sits behind VirtualBox's NAT, gets `10.0.2.15`, can reach the Internet, but cannot be reached from outside. Switch to **Bridged** to place it directly on my LAN.
 
 ## TCP, UDP and ICMP
 
@@ -390,6 +443,23 @@ Test whether a port is open, using Nmap's official test host (a few requests onl
 nc -vz scanme.nmap.org 22 80 443
 ```
 
+I ran a TCP test inside one terminal. The listener runs in the background and writes what it receives into a file, and then I test two ports on Nmap's official test host (only a few requests):
+
+```bash
+nc -lvnp 4444 > /tmp/nc-received.txt &
+sleep 1
+echo "hello over TCP" | nc -w 1 127.0.0.1 4444
+sleep 1
+cat /tmp/nc-received.txt
+nc -vz -w 3 scanme.nmap.org 22 80
+```
+
+![A netcat listener and client, and a port test](images/03-netcat.png)
+
+- `nc -lvnp 4444` started a listener (`-l`) with verbose output (`-v`), no name lookups (`-n`) on port 4444 (`-p`). The `>` sent whatever it received into a file, and `&` ran it in the background.
+- The second `nc` connected to that port and sent one line. `cat` shows that the line arrived in the file, so a TCP connection really carried the data.
+- `nc -vz` only checks whether a port accepts a connection (`-z` sends no data). It reported the result for each port on `scanme.nmap.org`.
+
 See listening ports on my own machine:
 
 ```
@@ -420,6 +490,8 @@ sudo traceroute -T -p 443 example.com     # using TCP port 443 (passes more fire
 
 ### Practical 12: ICMP experiments
 
+`traceroute` and `hping3` may need installing: `sudo apt install traceroute hping3 -y`.
+
 ```
 ping -c 4 8.8.8.8              # Linux (Windows: ping -n 4)
 ping -c 4 -s 1000 8.8.8.8      # bigger payload
@@ -427,6 +499,18 @@ ping 127.0.0.1                 # test my own TCP/IP stack
 sudo hping3 -1 192.168.1.1     # craft ICMP myself (my own lab only)
 sudo nmap -sn 192.168.1.0/24   # ping sweep to find live hosts (my own network only)
 ```
+
+```bash
+ping -c 4 8.8.8.8
+ping -c 2 -s 1000 8.8.8.8
+ping -c 1 127.0.0.1
+```
+
+![ping with different packet sizes and the loopback address](images/03-icmp-ping.png)
+
+- Each reply line shows the **TTL** and the round-trip time (`time=`). The summary shows the packet loss and the minimum, average and maximum time.
+- With `-s 1000`, the replies were 1008 bytes, which is the 1000-byte payload plus the 8-byte ICMP header.
+- Pinging `127.0.0.1` shows a TTL of 64, the Linux default, because the packet never leaves my machine. The TTL from `8.8.8.8` is a different number: it started at the server's default, and every router on the way back subtracted 1.
 
 A reply with TTL 64 usually means Linux or Mac, 128 usually Windows, and 255 usually network gear. This is a rough OS hint, because the TTL drops by one per hop.
 
@@ -498,3 +582,22 @@ Look up well-known ports in the services file. On Windows it is `C:\Windows\Syst
 ```
 grep -w 443 /etc/services
 ```
+
+I started a small web server on the loopback address, checked which program listens on its port, and looked up the standard ports:
+
+```bash
+python3 -m http.server 8000 --bind 127.0.0.1 &
+sleep 1
+ss -tlnp | grep 8000
+curl -sI http://127.0.0.1:8000 | head -n 3
+grep -w 443 /etc/services
+jobs
+kill %1
+```
+
+![A listening port, the program that owns it, and the services file](images/03-listening-ports.png)
+
+- `ss -tlnp | grep 8000` showed a `LISTEN` socket on `127.0.0.1:8000` owned by `python3`. Because I bound the server to the loopback address, only my own machine can reach it. Without `--bind`, it would listen on all interfaces.
+- `curl -sI` fetched only the response headers: the HTTP status line, the `Server` header naming Python's `SimpleHTTP`, and the date. The server also printed a log line for the request (`HEAD / HTTP/1.1`) into my terminal, because it runs in the background of the same terminal.
+- `/etc/services` maps port numbers to service names. Port 443 is `https`, listed for TCP and also for UDP (HTTP/3).
+- `jobs` shows the job number of the server. `kill %1` stops it only if it is job 1. If I started other background jobs earlier in the same terminal, the number is higher, so I use the number that `jobs` shows (or `pkill -f "http.server 8000"`). I check that nothing stays open.

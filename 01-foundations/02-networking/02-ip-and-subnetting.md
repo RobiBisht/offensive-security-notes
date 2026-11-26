@@ -2,6 +2,8 @@
 
 [Back to networking index](README.md)
 
+I ran the commands in this file on Kali Linux (WSL2).
+
 ## IP addressing
 
 An IP address is the logical address of a device on a network, like a postal address. It has a **network part** (which street) and a **host part** (which house).
@@ -92,6 +94,19 @@ curl ifconfig.me
 ```
 
 **Task:** Compare my private IP (`ip addr`) with my public IP (`curl ifconfig.me`). They differ because of NAT.
+
+```bash
+ip -br addr
+hostname -I
+curl -s ifconfig.me | sed -E 's/[0-9]+\.[0-9]+$/x.x/' ; echo
+```
+
+![Private addresses compared with my public address](images/02-ip-addresses.png)
+
+- `ip -br addr` lists my interfaces in short form. `lo` has the loopback address `127.0.0.1`, and the other interface has a **private** address (inside one of the private ranges in the table above).
+- `hostname -I` prints only my machine's addresses.
+- `curl -s ifconfig.me` printed my **public** address, which is different from every address above. It is the address of my Internet connection, and my router uses NAT to share it between all my devices.
+- I hide the last two parts of my public address with `sed` before it is printed, because the full address identifies my connection.
 
 ## Subnetting
 
@@ -192,6 +207,47 @@ Linux: `ipcalc` (install it first with `sudo apt install ipcalc`):
 ipcalc 192.168.10.37/27
 ```
 
+![Checking a subnet with Python and ipcalc](images/02-subnet-verify.png)
+
+- The Python script printed the network address `192.168.10.32`, the broadcast address `192.168.10.63`, the mask `255.255.255.224` and 30 usable hosts, which matches my hand calculation above.
+- The second line of Python listed the four `/26` subnets of `192.168.1.0/24`.
+- `ipcalc` agreed: network `192.168.10.32/27`, usable hosts from `.33` to `.62`, broadcast `.63`.
+- Checking my own answers with a tool is how I find mistakes in my method, such as using the wrong block size.
+
 **Task:** Subnet `172.16.0.0/16` into subnets of 500 hosts each.
 
 **Answer:** 500 hosts need 9 host bits (`2^9 - 2 = 510`), so the prefix is `/23`. The subnets are `172.16.0.0/23`, `172.16.2.0/23`, `172.16.4.0/23`, and so on.
+
+## Practice problems
+
+I solve these by hand first, then check them with Python or `ipcalc`.
+
+1. **Analyse `10.20.30.77/28`.** Find the network address, the usable range, the broadcast address and the number of usable hosts.
+2. **Split `172.16.5.0/24` into 8 equal subnets.** What is the new prefix, how many hosts does each subnet have, and what are the first three subnets?
+3. **VLSM for `192.168.50.0/24`:** Sales needs 60 hosts, Dev 28, Guests 12 and a router link 2. Allocate the largest first.
+4. **Same subnet?** Are `192.168.20.70/27` and `192.168.20.100/27` on the same subnet?
+
+### Answers
+
+1. `/28` has a block size of 16 and 14 usable hosts. 77 falls in the block that starts at 64. Network `10.20.30.64`, usable range `10.20.30.65` to `10.20.30.78`, broadcast `10.20.30.79`.
+2. 8 subnets need 3 borrowed bits, so the prefix is `/27` (block size 32, 30 hosts each). The first three subnets are `172.16.5.0/27` (hosts `.1` to `.30`, broadcast `.31`), `172.16.5.32/27` (`.33` to `.62`, broadcast `.63`) and `172.16.5.64/27` (`.65` to `.94`, broadcast `.95`).
+3. Largest first:
+
+| Segment | Needs | Prefix | Network | Usable range |
+|---|---|---|---|---|
+| Sales | 60 | /26 (62 hosts) | 192.168.50.0/26 | .1 to .62 |
+| Dev | 28 | /27 (30 hosts) | 192.168.50.64/27 | .65 to .94 |
+| Guests | 12 | /28 (14 hosts) | 192.168.50.96/28 | .97 to .110 |
+| Router link | 2 | /30 (2 hosts) | 192.168.50.112/30 | .113 to .114 |
+
+4. The block size is 32. `.70` is in the block `.64` to `.95`, and `.100` is in the block `.96` to `.127`. They are in different subnets, so their traffic has to go through a router.
+
+Check with Python:
+
+```bash
+python3 - <<'PY'
+import ipaddress
+print(ipaddress.ip_network('10.20.30.77/28', strict=False))
+print(ipaddress.ip_interface('192.168.20.70/27').network, ipaddress.ip_interface('192.168.20.100/27').network)
+PY
+```

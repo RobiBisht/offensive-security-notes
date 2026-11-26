@@ -4,6 +4,8 @@
 
 Nmap (Network Mapper) is the standard tool for discovering hosts, open ports, running services, operating systems and known weaknesses. It is the first tool most ethical hackers run during reconnaissance. I only scan my own lab machines, or targets I have written permission to test. `scanme.nmap.org` is Nmap's official test host, and I send it only a few requests.
 
+I practiced on Kali Linux in WSL2, against my own machine (`127.0.0.1`), with the SSH server and a Python web server as targets. Nmap may need installing first: `sudo apt install nmap -y`.
+
 ## Basic syntax
 
 ```
@@ -102,7 +104,7 @@ sudo nmap -sV --version-intensity 9 192.168.1.10   # try harder (0 to 9)
 sudo nmap -sV --version-light 192.168.1.10         # faster, less accurate
 ```
 
-Example output (Metasploitable 2, trimmed):
+Example output from a Metasploitable 2 lab (a reference example, not my own scan):
 
 ```
 PORT     STATE SERVICE     VERSION
@@ -208,20 +210,99 @@ xsltproc scans/metasploitable.xml -o scans/report.html
 
 Evasion options are for understanding how firewalls and IDS behave in my own lab. I don't use them against systems I don't have permission to test.
 
-## Practical lab: scan my own network step by step
+## Practical lab: scan my own machine step by step
 
-**Setup:** In VirtualBox, run Kali and Metasploitable 2 on a Host-Only or Internal network (for example `192.168.56.0/24`) so they are isolated from the Internet. Find Metasploitable's IP by logging in (the default credentials for that lab VM are `msfadmin` / `msfadmin`) and running `ifconfig`.
+**Setup:** I scan only my own machine, using `127.0.0.1`, with two services as targets: the SSH server and a Python web server bound to the loopback address.
 
-1. **Discover live hosts:** `sudo nmap -sn 192.168.56.0/24`, then note the target IP (say `192.168.56.101`).
-2. **Quick scan:** `sudo nmap -F 192.168.56.101`
-3. **All ports and service versions:** `sudo nmap -p- -sV -T4 -oA scans/meta 192.168.56.101`
-4. **OS guess:** `sudo nmap -O 192.168.56.101`
-5. **Default scripts and a vulnerability check:** `sudo nmap -sC --script=vuln -p 21,22,80,445 192.168.56.101`
-6. **UDP top ports:** `sudo nmap -sU --top-ports 20 192.168.56.101`
-7. **Compare scan types:** run `sudo nmap -sT` and `sudo nmap -sS` with Wireshark open. In the SYN scan, I will see RST replacing the final ACK.
-8. **Document:** open `scans/meta.nmap`, then write one line per open port: service, version, risk and recommended fix.
+```bash
+sudo apt install nmap -y
+sudo service ssh start
+cd ~/practice
+python3 -m http.server 8000 --bind 127.0.0.1 > /dev/null 2>&1 &
+```
 
-## Mini report template
+I send the web server's log to `/dev/null`. Otherwise it prints a line into my terminal for every request, and those lines get mixed into the Nmap output.
+
+A bigger lab would use Metasploitable 2 on a VirtualBox host-only network: log in with the default credentials of that lab VM, find its address with `ifconfig`, and use that address instead of `127.0.0.1`. I did not use it here.
+
+### 1. SYN scan
+
+```bash
+sudo nmap -sS -p 22,80,443,8000 127.0.0.1
+```
+
+![A SYN scan of four ports on my own machine](images/06-nmap-syn-scan.png)
+
+- `-sS` sent a SYN to each of the four ports without completing the handshake, and `-p` limited the scan to those ports.
+- Port 22 (the SSH server) and port 8000 (the Python web server) were listed as `open`.
+- Ports 80 and 443 were listed as `closed`: nothing listens there, so the machine answered my SYN with a RST. Nmap lists every port when I scan only a few. On a larger scan, it hides the closed ports and prints a line such as "Not shown: 98 closed tcp ports (reset)".
+- The output also shows that the host is up, with its latency, and how long the scan took.
+
+### 2. Service and version detection
+
+```bash
+sudo nmap -sV -p 22,8000 127.0.0.1
+```
+
+![Service and version detection](images/06-nmap-version.png)
+
+- `-sV` connected to each open port and read the banner, so the `VERSION` column names the real software: OpenSSH for port 22, and a Python HTTP server for port 8000.
+- In this screenshot, the web server's own log is mixed into the output, because I ran it without sending its log to `/dev/null`. Those lines are the probes that Nmap sent to identify the service: `GET /`, `POST /sdk`, `GET /nmaplowercheck...`, `GET /HNAP1` and `GET /evox/about`. Version detection works by sending such probes and comparing the answers with a database.
+- A version is a lead: the next step would be to look it up in a CVE database. Here the versions come from my own up-to-date system.
+
+### 3. Scripts
+
+```bash
+nmap --script=http-title,http-headers -p 8000 127.0.0.1
+nmap --script=ssh-auth-methods -p 22 127.0.0.1
+```
+
+![Nmap scripts against the web server and the SSH server](images/06-nmap-scripts.png)
+
+- `http-title` printed the title of the page the web server returned, `Directory listing for /`.
+- `http-headers` printed the response headers (`Server`, `Date`, `Content-type` and `Content-Length`) and the request type it used (`HEAD`). The `Server` header names Python's `SimpleHTTP`, which tells an attacker exactly what software is running.
+- `ssh-auth-methods` listed the authentication methods the SSH server accepts. `password` is on the list because my server allows password logins, which attackers can try to brute-force. Keys are safer.
+
+### 4. Saving the output
+
+```bash
+mkdir -p scans
+sudo nmap -sV -p 22,8000 -oA scans/local 127.0.0.1
+ls scans
+grep "open" scans/local.gnmap
+```
+
+![The three output files and a grep on the grepable file](images/06-nmap-output-files.png)
+
+- `-oA scans/local` created three files at once: `local.nmap` (normal text), `local.xml` and `local.gnmap` (grepable).
+- `grep "open"` on the grepable file printed one line with the open ports and their services, which is easy to process with other tools.
+
+### 5. Watching the scan on the network
+
+I captured a scan in Wireshark and explained it in [Wireshark captures explained](05-wireshark-captures-explained.md), Capture 7.
+
+### 6. Document the results
+
+For each open port I write the service, the version, the risk and the recommended fix. This is the base of a pentest report.
+
+### Cleaning up
+
+```bash
+kill %1
+sudo service ssh stop
+rm -r scans
+```
+
+## Mini report
+
+My own scan found two open ports:
+
+| Port | Service / Version | Risk | Recommendation |
+|---|---|---|---|
+| 22/tcp | OpenSSH (version from my scan) | Password logins are allowed, so the account can be brute-forced | Use key-based login and disable password login, keep OpenSSH updated, and stop the service when I don't need it |
+| 8000/tcp | Python `http.server` | Serves every file in its directory without authentication | Use it only for short transfers, bind it to `127.0.0.1`, and stop it afterwards |
+
+For comparison, here are typical findings on Metasploitable 2, an intentionally vulnerable VM (a reference example, not my own scan):
 
 | Port | Service / Version | Risk | Recommendation |
 |---|---|---|---|

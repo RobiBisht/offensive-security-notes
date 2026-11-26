@@ -1,88 +1,91 @@
 # Foundations
 
-This folder contains my foundational learning notes and practical exercises for cybersecurity. It focuses on building a strong understanding of operating systems, networking, command-line tools, and basic security concepts.
+Notes and practice from the foundations of my offensive security study: Linux, networking, Windows and the OverTheWire Bandit wargame. I practice in my own lab, on Kali Linux in WSL2 and on Windows 11, and I only test systems that I own or have permission to test. I do not publish flags, passwords or answers from challenge platforms.
 
-I use hands-on practice, virtual machines, WSL2, and cybersecurity learning platforms to understand these concepts and document what I learn.
+## Contents
 
-## Topics
+| Part | Topic | Status |
+|---|---|---|
+| [01-linux](01-linux/README.md) | Linux command line, permissions, processes, packages, scripting | Done |
+| [02-networking](02-networking/README.md) | Networking, Wireshark and Nmap | In progress |
+| [03-windows-basics.md](03-windows-basics.md) | Windows shells, users, permissions, registry, services, event logs | In progress |
+| [04-bandit-progress.md](04-bandit-progress.md) | OverTheWire Bandit wargame | In progress |
 
-### 1. Linux Fundamentals
+## What is in each part
 
-A collection of Linux notes and practical exercises covering essential Linux commands, system administration, and command-line operations.
+### 1. Linux fundamentals
+
+Notes and practical exercises on the Linux command line, with screenshots of my own practice.
 
 **Topics covered:**
 - Linux basics and file management
 - Searching and text processing
-- Users, groups, and permissions
+- Users, groups and permissions
 - SSH and basic networking commands
-- Processes, services, and cron jobs
+- Processes, services and cron jobs
 - Package management and system logs
 - Shell fundamentals and scripting
-- System information, boot process, disks, and file systems
+- System information, boot process, disks and file systems
 - Practice exercises and solutions
 
-**Notes:** [Linux Fundamentals](Linux/README.md)
+**Notes:** [Linux fundamentals](01-linux/README.md)
 
-### 2. Networking Fundamentals
+### 2. Networking fundamentals
 
-Notes covering computer networking concepts and practical networking knowledge required for cybersecurity.
+Notes on the networking concepts that matter for security, with practical work in Wireshark and Nmap.
 
 **Topics covered:**
-- Networking basics
+- OSI and TCP/IP models, and encapsulation
 - IP addressing and subnetting
-- Network protocols
-- TCP and UDP
-- DNS and DHCP
-- Network devices
-- Routing and switching
-- Network troubleshooting
+- MAC, ARP, DNS, DHCP and NAT
+- TCP, UDP and ICMP, and common ports
+- Packet analysis with Wireshark
+- Port scanning with Nmap
 
-**Notes:** [Networking Fundamentals](Networking/README.md)
+**Notes:** [Networking fundamentals](02-networking/README.md)
 
-### 3. Windows Fundamentals
+### 3. Windows fundamentals
 
-Notes covering Windows operating system concepts, administration, and security fundamentals.
+Notes on the Windows operating system from a security point of view.
 
 **Topics covered:**
 - Command Prompt and PowerShell
-- Users and groups
-- File permissions
-- Windows processes and services
-- Registry
-- Scheduled tasks
+- Users, groups and UAC
+- NTFS permissions and shares
+- The registry
+- Processes, services and scheduled tasks
 - Windows networking
 - Event logs
+- Active Directory concepts
 
-**Notes:** [Windows Basics](03-windows-basics.md)
+**Notes:** [Windows basics](03-windows-basics.md)
 
 ### 4. OverTheWire: Bandit
 
-Practical Linux command-line challenges designed to improve problem-solving skills and understanding of Linux security concepts.
+Command-line challenges that train problem solving and Linux security concepts. The notes describe what I did and what I learned, never the passwords.
 
 **Skills practiced:**
 - SSH
 - File and directory navigation
 - Finding and searching files
-- Linux permissions
 - Pipes and redirection
 - Encoding and decoding
 - Compression and archives
 
-**Progress:** Levels 0–20
+**Status:** the notes are still in progress.
 
-**Notes:** [Bandit Progress](04-bandit-progress.md)
+**Notes:** [Bandit progress](04-bandit-progress.md)
 
 **Platform:** [OverTheWire Bandit](https://overthewire.org/wargames/bandit/)
 
-## Learning Approach
+## Learning approach
 
-- Practice concepts in Linux and Windows environments.
-- Use Kali Linux and Ubuntu through WSL2 and VirtualBox.
+- Practice every concept in a real environment, on Linux (WSL2, Virtualbox or VMware) and on Windows.
 - Understand commands instead of memorizing them.
-- Document practical examples, outputs, and troubleshooting.
+- Document my own commands, output and mistakes, with screenshots.
 - Complete exercises to test my understanding.
-- Maintain notes as I learn new concepts.
+- Keep the notes up to date as I learn.
 
 ## Goal
 
-Build a strong foundation in operating systems, networking, and system administration before progressing to advanced cybersecurity topics, including ethical hacking and offensive security.
+Build a strong foundation in operating systems, networking and system administration before moving on to advanced topics, including ethical hacking and offensive security.
